@@ -37,6 +37,21 @@ func Register(name Format, extensions []string, converter ConvertFunc) error {
 	return registerMerger(makeMerger(name, extensions, converter))
 }
 
+// Unregister unregister a format.
+func Unregister(name Format) {
+	format, found := mergersByName[name]
+	if !found {
+		return
+	}
+	delete(mergersByName, name)
+	for _, ext := range format.Extensions {
+		lext := strings.ToLower(ext)
+		if _, found := mergersByExt[lext]; found {
+			delete(mergersByExt, lext)
+		}
+	}
+}
+
 // registerMerger add a new Merger.
 func registerMerger(format *Merger) error {
 	if _, found := mergersByName[format.Name]; found {
