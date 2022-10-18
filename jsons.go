@@ -11,7 +11,17 @@ import (
 	"github.com/qjebbs/go-jsons/merge"
 )
 
-// Merge loads inputs and merges them into json in []byte
+// Merge loads inputs and merges them into json in []byte.
+//
+// It detects the file extension for format merger selecting, or try all mergers
+// if no extension found
+//
+// Accepted Input:
+//
+//  - `[]byte`: content of a file
+//  - `string`: path to a file, either local or remote
+//  - `[]string`: a list of files, either local or remote
+//  - `io.Reader`: a file content reader
 //
 // It will apply "_priority" sort and "_tag" merge
 // rules, and remove helper fields before the final output
@@ -33,6 +43,14 @@ func Merge(inputs ...interface{}) ([]byte, error) {
 
 // MergeAs loads inputs as 'format' and merges them into json in []byte
 //
+// Accepted Input:
+//
+//  - `[]byte`: content of a file
+//  - `string`: path to a file, either local or remote
+//  - `[]string`: a list of files, either local or remote
+//  - `io.Reader`: a file content reader
+//
+//
 // It will apply "_priority" sort and "_tag" merge
 // rules, and remove helper fields before the final output
 func MergeAs(format Format, inputs ...interface{}) ([]byte, error) {
@@ -53,6 +71,14 @@ func MergeAs(format Format, inputs ...interface{}) ([]byte, error) {
 
 // MergeToMapAs load input and merge as specified format into m
 //
+// Accepted Input:
+//
+//  - `[]byte`: content of a file
+//  - `string`: path to a file, either local or remote
+//  - `[]string`: a list of files, either local or remote
+//  - `io.Reader`: a file content reader
+//
+//
 // Note: it will neither apply "_priority" sort or "_tag" merge
 // rules nor remove helper fields
 func MergeToMapAs(formatName Format, input interface{}, target map[string]interface{}) error {
@@ -63,9 +89,17 @@ func MergeToMapAs(formatName Format, input interface{}, target map[string]interf
 	return f.Merge(input, target)
 }
 
-// MergeToMap loads inputs and merges them into target
-// it detects extension for merger selecting, or try all mergers
+// MergeToMap loads inputs and merges them into target.
+// It detects the file extension for format merger selecting, or try all mergers
 // if no extension found
+//
+// Accepted Input:
+//
+//  - `[]byte`: content of a file
+//  - `string`: path to a file, either local or remote
+//  - `[]string`: a list of files, either local or remote
+//  - `io.Reader`: a file content reader
+//
 //
 // Note: it will neither apply "_priority" sort or "_tag" merge
 // rules nor remove helper fields
