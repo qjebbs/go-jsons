@@ -17,13 +17,12 @@ func convert(m map[interface{}]interface{}) map[string]interface{} {
 		switch v2 := v.(type) {
 		case map[interface{}]interface{}:
 			value = convert(v2)
-		case []interface{}:
-			for i, el := range v2 {
-				if m, ok := el.(map[interface{}]interface{}); ok {
-					v2[i] = convert(m)
-				}
+		case []map[interface{}]interface{}:
+			arr := make([]map[string]interface{}, len(v2))
+			for i, m := range v2 {
+				arr[i] = convert(m)
 			}
-			value = v2
+			value = arr
 		default:
 			value = v
 		}
