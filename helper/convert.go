@@ -1,12 +1,11 @@
-package merge
+package helper
 
 import (
 	"fmt"
 )
 
-// Convert converts map[interface{}]interface{} to map[string]interface{} which
-// is mergable by merge.Maps
-func Convert(m map[interface{}]interface{}) map[string]interface{} {
+// ConvertYAMLMap converts map unmarshaled from yaml to json compatible map.
+func ConvertYAMLMap(m map[interface{}]interface{}) map[string]interface{} {
 	return convert(m)
 }
 
@@ -17,16 +16,17 @@ func convert(m map[interface{}]interface{}) map[string]interface{} {
 		switch v2 := v.(type) {
 		case map[interface{}]interface{}:
 			value = convert(v2)
-		case []map[interface{}]interface{}:
-			arr := make([]map[string]interface{}, len(v2))
-			for i, m := range v2 {
-				arr[i] = convert(m)
+		case []interface{}:
+			for i, el := range v2 {
+				if m, ok := el.(map[interface{}]interface{}); ok {
+					v2[i] = convert(m)
+				}
 			}
-			value = arr
+			value = v2
 		default:
 			value = v
 		}
-		key := "null"
+		key := "nil"
 		if k != nil {
 			key = fmt.Sprint(k)
 		}

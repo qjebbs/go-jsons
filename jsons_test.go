@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/qjebbs/go-jsons"
-	"github.com/qjebbs/go-jsons/merge"
+	"github.com/qjebbs/go-jsons/helper"
 	"gopkg.in/yaml.v2"
 )
 
@@ -46,7 +46,7 @@ func TestRegisterYAML(t *testing.T) {
 			if err != nil {
 				return nil, err
 			}
-			m2 := merge.Convert(m1)
+			m2 := helper.ConvertYAMLMap(m1)
 			return m2, nil
 		},
 	)
