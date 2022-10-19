@@ -10,7 +10,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func TestMergeBytes(t *testing.T) {
+func TestMerge(t *testing.T) {
 	a := []byte(`{"a":1}`)
 	b := []byte(`{"b":1}`)
 	c := []byte(`{"c":1}`)
@@ -22,7 +22,7 @@ func TestMergeBytes(t *testing.T) {
 	assertJSONEqual(t, want, got)
 }
 
-func TestMergeBytesAs(t *testing.T) {
+func TestMergeAs(t *testing.T) {
 	a := []byte(`{"a":1}`)
 	b := []byte(`{"b":[1]}`)
 	c := []byte(`{"b":[2]}`)
@@ -35,7 +35,8 @@ func TestMergeBytesAs(t *testing.T) {
 }
 
 func TestRegisterYAML(t *testing.T) {
-	jsons.Register(
+	m := jsons.NewMerger()
+	m.RegisterLoader(
 		"yaml",
 		[]string{".yaml", ".yml"},
 		func(b []byte) (map[string]interface{}, error) {
@@ -52,7 +53,7 @@ func TestRegisterYAML(t *testing.T) {
 	b := []byte(`b: 1`)
 	c := []byte(`c: 1`)
 	want := []byte(`{"a":1,"b":1,"c":1}`)
-	got, err := jsons.MergeAs("yaml", a, b, c)
+	got, err := m.MergeAs("yaml", a, b, c)
 	if err != nil {
 		t.Error(err)
 	}

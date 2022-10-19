@@ -7,9 +7,18 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"strings"
 	"time"
 )
+
+func must(errs ...error) {
+	for _, err := range errs {
+		if err != nil {
+			panic(err)
+		}
+	}
+}
 
 // loadToBytes loads one arg to []byte, maybe an remote url, or local file path
 func loadToBytes(arg string) (out []byte, err error) {
@@ -59,4 +68,9 @@ func fetchHTTPContent(target string) ([]byte, error) {
 	}
 
 	return content, nil
+}
+
+func getExtension(filename string) string {
+	ext := filepath.Ext(filename)
+	return strings.ToLower(ext)
 }

@@ -5,11 +5,11 @@ import (
 )
 
 // GetExtensions get extensions of given format
-func GetExtensions(formatName Format) ([]string, error) {
+func (m *Merger) GetExtensions(formatName Format) ([]string, error) {
 	if formatName == FormatAuto {
-		return GetAllExtensions(), nil
+		return m.GetAllExtensions(), nil
 	}
-	f, found := mergersByName[formatName]
+	f, found := m.loadersByName[formatName]
 	if !found {
 		return nil, fmt.Errorf("%s not found", formatName)
 	}
@@ -17,9 +17,9 @@ func GetExtensions(formatName Format) ([]string, error) {
 }
 
 // GetAllExtensions get all extensions supported
-func GetAllExtensions() []string {
+func (m *Merger) GetAllExtensions() []string {
 	extensions := make([]string, 0)
-	for _, f := range mergersByName {
+	for _, f := range m.loadersByName {
 		extensions = append(extensions, f.Extensions...)
 	}
 	return extensions

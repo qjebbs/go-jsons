@@ -1,100 +1,182 @@
 package jsons
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"strings"
 
 	"github.com/qjebbs/go-jsons/merge"
 )
 
-// Merger is a configurable format merger for V2Ray config files.
+// Merger is the jsons merger
 type Merger struct {
-	Name       Format
-	Extensions []string
-	Merge      mergeFunc
+	loadersByName map[Format]*loader
+	loadersByExt  map[string]*loader
 }
 
-// ConvertFunc converts the input bytes of a config content to map[string]interface{}
-type ConvertFunc func([]byte) (map[string]interface{}, error)
-
-// mergeFunc is a utility to merge the input into map[string]interface{}
-type mergeFunc func(interface{}, map[string]interface{}) error
-
-// makeMerger makes a merger who merge the format by converting it to JSON
-func makeMerger(name Format, extensions []string, converter ConvertFunc) *Merger {
+// NewMerger returns a new Merger
+func NewMerger() *Merger {
 	return &Merger{
-		Name:       name,
-		Extensions: extensions,
-		Merge:      makeMergeFunc(converter),
+		loadersByName: make(map[Format]*loader),
+		loadersByExt:  make(map[string]*loader),
 	}
 }
 
-// makeMergeFunc makes a merge func who merge the input to
-func makeMergeFunc(converter ConvertFunc) mergeFunc {
-	return func(input interface{}, target map[string]interface{}) error {
-		if target == nil {
-			panic("merge target is nil")
+// Merge merges inputs into a single json.
+//
+// It detects the format by file extension, or try all mergers
+// if no extension found
+//
+// Accepted Input:
+//
+//  - `[]byte`: content of a file
+//  - `string`: path to a file, either local or remote
+//  - `[]string`: a list of files, either local or remote
+//  - `io.Reader`: a file content reader
+func (m *Merger) Merge(inputs ...interface{}) ([]byte, error) {
+	tmp := make(map[string]interface{})
+	for _, input := range inputs {
+		err := m.MergeToMap(input, tmp)
+		if err != nil {
+			return nil, err
 		}
-		switch v := input.(type) {
-		case string:
-			err := loadFile(v, target, converter)
-			if err != nil {
-				return err
-			}
-		case []string:
-			err := loadFiles(v, target, converter)
-			if err != nil {
-				return err
-			}
-		case []byte:
-			err := loadBytes(v, target, converter)
-			if err != nil {
-				return err
-			}
-		case io.Reader:
-			err := loadReader(v, target, converter)
-			if err != nil {
-				return err
-			}
-		default:
-			return errors.New("unknow merge input type")
-		}
-		return nil
 	}
+	err := merge.ApplyRules(tmp)
+	if err != nil {
+		return nil, err
+	}
+	merge.RemoveHelperFields(tmp)
+	return json.Marshal(tmp)
 }
 
-func loadFiles(files []string, target map[string]interface{}, converter ConvertFunc) error {
-	for _, file := range files {
-		err := loadFile(file, target, converter)
+// MergeAs loads inputs of the specific format and merges into a single json.
+//
+// Accepted Input:
+//
+//  - `[]byte`: content of a file
+//  - `string`: path to a file, either local or remote
+//  - `[]string`: a list of files, either local or remote
+//  - `io.Reader`: a file content reader
+func (m *Merger) MergeAs(format Format, inputs ...interface{}) ([]byte, error) {
+	tmp := make(map[string]interface{})
+	for _, input := range inputs {
+		err := m.MergeToMapAs(format, input, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	err := merge.ApplyRules(tmp)
+	if err != nil {
+		return nil, err
+	}
+	merge.RemoveHelperFields(tmp)
+	return json.Marshal(tmp)
+}
+
+// MergeToMapAs load inputs of the specific format into target
+//
+// Accepted Input:
+//
+//  - `[]byte`: content of a file
+//  - `string`: path to a file, either local or remote
+//  - `[]string`: a list of files, either local or remote
+//  - `io.Reader`: a file content reader
+//
+// it will neither apply "_priority" sort or "_tag" merge rules
+// nor remove helper fields. You may want to call them manually:
+//
+//  err := merge.ApplyRules(target)
+//  if err != nil {
+//  	return nil, err
+//  }
+//  merge.RemoveHelperFields(target)
+func (m *Merger) MergeToMapAs(formatName Format, input interface{}, target map[string]interface{}) error {
+	if formatName == FormatAuto {
+		return m.MergeToMap(input, target)
+	}
+	f, found := m.loadersByName[formatName]
+	if !found {
+		return fmt.Errorf("unknown format: %s", formatName)
+	}
+	return f.Merge(input, target)
+}
+
+// MergeToMap loads inputs and merges them into target.
+// It detects the format by file extension, or try all mergers
+// if no extension found
+//
+// Accepted Input:
+//
+//  - `[]byte`: content of a file
+//  - `string`: path to a file, either local or remote
+//  - `[]string`: a list of files, either local or remote
+//  - `io.Reader`: a file content reader
+//
+// it will neither apply "_priority" sort or "_tag" merge rules
+// nor remove helper fields. You may want to call them manually:
+//
+//  err := merge.ApplyRules(target)
+//  if err != nil {
+//  	return nil, err
+//  }
+//  merge.RemoveHelperFields(target)
+func (m *Merger) MergeToMap(input interface{}, target map[string]interface{}) error {
+	switch v := input.(type) {
+	case string:
+		err := m.mergeContent(v, target)
 		if err != nil {
 			return err
 		}
+	case []string:
+		for _, file := range v {
+			err := m.mergeContent(file, target)
+			if err != nil {
+				return err
+			}
+		}
+	case []byte:
+		err := m.mergeContent(v, target)
+		if err != nil {
+			return err
+		}
+	case io.Reader:
+		// read to []byte incase it tries different mergers
+		bs, err := ioutil.ReadAll(v)
+		if err != nil {
+			return err
+		}
+		err = m.mergeContent(bs, target)
+		if err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("unsupported input type: %T", input)
 	}
 	return nil
 }
 
-func loadFile(file string, target map[string]interface{}, converter ConvertFunc) error {
-	bs, err := loadToBytes(file)
-	if err != nil {
-		return fmt.Errorf("fail to load %s: %s", file, err)
+func (m *Merger) mergeContent(input interface{}, target map[string]interface{}) error {
+	if file, ok := input.(string); ok {
+		ext := getExtension(file)
+		if ext != "" {
+			lext := strings.ToLower(ext)
+			f, found := m.loadersByExt[lext]
+			if !found {
+				return fmt.Errorf("unsupported file extension: %s", ext)
+			}
+			return f.Merge(file, target)
+		}
 	}
-	return loadBytes(bs, target, converter)
-}
-
-func loadReader(reader io.Reader, target map[string]interface{}, converter ConvertFunc) error {
-	bs, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return err
+	var errs []string
+	// no extension, try all mergers
+	for _, f := range m.loadersByName {
+		err := f.Merge(input, target)
+		if err == nil {
+			return nil
+		}
+		errs = append(errs, fmt.Sprintf("[%s] %s", f.Name, err))
 	}
-	return loadBytes(bs, target, converter)
-}
-
-func loadBytes(bs []byte, target map[string]interface{}, converter ConvertFunc) error {
-	m, err := converter(bs)
-	if err != nil {
-		return err
-	}
-	return merge.Maps(target, m)
+	return fmt.Errorf("tried all formats but failed for: \n\n%s\n\nerrors:\n\n  %s", input, strings.Join(errs, "\n  "))
 }

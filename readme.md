@@ -83,7 +83,7 @@ Output:
 }
 ```
 
-## Other Formats Support
+## Load from Other Formats
 
 `go-jsons` supports only `JSON`, but it allows you to extend it to support other formats easily.
 
@@ -102,7 +102,9 @@ import (
 
 func main() {
 	const FormatYAML jsons.Format = "yaml"
-	jsons.Register(
+	m := jsons.NewMerger()
+	m.RegisterDefaultLoader()
+	m.RegisterLoader(
 		FormatYAML,
 		[]string{".yaml", ".yml"},
 		func(b []byte) (map[string]interface{}, error) {
@@ -115,9 +117,9 @@ func main() {
 			return m2, nil
 		},
 	)
-	a := []byte(`a: 1`)
-	b := []byte(`b: 1`)
-	got, err := jsons.Merge(a, b)
+	a := []byte(`{"a": 1}`) // json
+	b := []byte(`b: 1`)     // yaml
+	got, err := m.Merge(a, b)
 	if err != nil {
 		panic(err)
 	}
