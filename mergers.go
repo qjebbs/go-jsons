@@ -18,13 +18,6 @@ func init() {
 			return m, nil
 		},
 	))
-	must(registerMerger(
-		&Merger{
-			Name:       FormatAuto,
-			Extensions: nil,
-			Merge:      MergeToMap,
-		}),
-	)
 }
 
 var (

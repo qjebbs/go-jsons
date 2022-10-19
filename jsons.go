@@ -82,6 +82,9 @@ func MergeAs(format Format, inputs ...interface{}) ([]byte, error) {
 // Note: it will neither apply "_priority" sort or "_tag" merge
 // rules nor remove helper fields
 func MergeToMapAs(formatName Format, input interface{}, target map[string]interface{}) error {
+	if formatName == FormatAuto {
+		return MergeToMap(input, target)
+	}
 	f, found := mergersByName[formatName]
 	if !found {
 		return fmt.Errorf("unknown format: %s", formatName)
@@ -153,9 +156,6 @@ func mergeSingleFile(input interface{}, m map[string]interface{}) error {
 	var errs []string
 	// no extension, try all mergers
 	for _, f := range mergersByName {
-		if f.Name == FormatAuto {
-			continue
-		}
 		err := f.Merge(input, m)
 		if err == nil {
 			return nil
