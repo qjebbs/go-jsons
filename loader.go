@@ -1,6 +1,7 @@
 package jsons
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -34,7 +35,10 @@ func makeLoader(name Format, extensions []string, converter ConvertFunc) *loader
 func makeLoadFunc(converter ConvertFunc) loadFunc {
 	return func(input interface{}, target map[string]interface{}) error {
 		if target == nil {
-			panic("merge target is nil")
+			return errors.New("target is nil")
+		}
+		if input == nil {
+			return nil
 		}
 		switch v := input.(type) {
 		case string:

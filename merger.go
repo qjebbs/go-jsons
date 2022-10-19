@@ -123,6 +123,9 @@ func (m *Merger) MergeToMapAs(formatName Format, input interface{}, target map[s
 //  }
 //  merge.RemoveHelperFields(target)
 func (m *Merger) MergeToMap(input interface{}, target map[string]interface{}) error {
+	if input == nil {
+		return nil
+	}
 	switch v := input.(type) {
 	case string:
 		err := m.mergeContent(v, target)

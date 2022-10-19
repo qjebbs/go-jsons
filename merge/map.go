@@ -6,6 +6,7 @@ package merge
 
 import (
 	"fmt"
+	"reflect"
 )
 
 // Maps merges source maps into target
@@ -25,7 +26,7 @@ func mergeMaps(target map[string]interface{}, source map[string]interface{}) (er
 	for key, value := range source {
 		target[key], err = mergeField(target[key], value)
 		if err != nil {
-			return
+			return fmt.Errorf("field '%s': %s", key, err)
 		}
 	}
 	return
@@ -38,18 +39,17 @@ func mergeField(target interface{}, source interface{}) (interface{}, error) {
 	if target == nil {
 		return source, nil
 	}
+	if reflect.TypeOf(source) != reflect.TypeOf(target) {
+		return nil, fmt.Errorf("type mismatch, expect %T, incoming %T", target, source)
+	}
 	if slice, ok := source.([]interface{}); ok {
-		if tslice, ok := target.([]interface{}); ok {
-			tslice = append(tslice, slice...)
-			return tslice, nil
-		}
-		return nil, fmt.Errorf("value type mismatch, source is 'slice' but target not: %s", source)
+		tslice, _ := target.([]interface{})
+		tslice = append(tslice, slice...)
+		return tslice, nil
 	} else if smap, ok := source.(map[string]interface{}); ok {
-		if tmap, ok := target.(map[string]interface{}); ok {
-			err := mergeMaps(tmap, smap)
-			return tmap, err
-		}
-		return nil, fmt.Errorf("value type mismatch, source is 'map[string]interface{}' but target not: %s", source)
+		tmap, _ := target.(map[string]interface{})
+		err := mergeMaps(tmap, smap)
+		return tmap, err
 	}
 	return source, nil
 }

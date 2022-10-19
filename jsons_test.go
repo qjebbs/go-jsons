@@ -3,6 +3,7 @@ package jsons_test
 import (
 	"encoding/json"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/qjebbs/go-jsons"
@@ -13,7 +14,7 @@ import (
 func TestMerge(t *testing.T) {
 	a := []byte(`{"a":1}`)
 	b := []byte(`{"b":1}`)
-	c := []byte(`{"c":1}`)
+	c := strings.NewReader(`{"c":1}`)
 	want := []byte(`{"a":1,"b":1,"c":1}`)
 	got, err := jsons.Merge(a, b, c)
 	if err != nil {
