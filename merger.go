@@ -38,7 +38,7 @@ func NewMerger() *Merger {
 func (m *Merger) Merge(inputs ...interface{}) ([]byte, error) {
 	tmp := make(map[string]interface{})
 	for _, input := range inputs {
-		err := m.MergeToMap(input, tmp)
+		err := m.mergeToMap(input, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -62,7 +62,7 @@ func (m *Merger) Merge(inputs ...interface{}) ([]byte, error) {
 func (m *Merger) MergeAs(format Format, inputs ...interface{}) ([]byte, error) {
 	tmp := make(map[string]interface{})
 	for _, input := range inputs {
-		err := m.MergeToMapAs(format, input, tmp)
+		err := m.mergeToMapAs(format, input, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -75,7 +75,7 @@ func (m *Merger) MergeAs(format Format, inputs ...interface{}) ([]byte, error) {
 	return json.Marshal(tmp)
 }
 
-// MergeToMapAs load inputs of the specific format into target
+// mergeToMapAs load inputs of the specific format into target
 //
 // Accepted Input:
 //
@@ -92,9 +92,9 @@ func (m *Merger) MergeAs(format Format, inputs ...interface{}) ([]byte, error) {
 //  	return nil, err
 //  }
 //  merge.RemoveHelperFields(target)
-func (m *Merger) MergeToMapAs(formatName Format, input interface{}, target map[string]interface{}) error {
+func (m *Merger) mergeToMapAs(formatName Format, input interface{}, target map[string]interface{}) error {
 	if formatName == FormatAuto {
-		return m.MergeToMap(input, target)
+		return m.mergeToMap(input, target)
 	}
 	f, found := m.loadersByName[formatName]
 	if !found {
@@ -103,7 +103,7 @@ func (m *Merger) MergeToMapAs(formatName Format, input interface{}, target map[s
 	return f.Merge(input, target)
 }
 
-// MergeToMap loads inputs and merges them into target.
+// mergeToMap loads inputs and merges them into target.
 // It detects the format by file extension, or try all mergers
 // if no extension found
 //
@@ -122,7 +122,7 @@ func (m *Merger) MergeToMapAs(formatName Format, input interface{}, target map[s
 //  	return nil, err
 //  }
 //  merge.RemoveHelperFields(target)
-func (m *Merger) MergeToMap(input interface{}, target map[string]interface{}) error {
+func (m *Merger) mergeToMap(input interface{}, target map[string]interface{}) error {
 	if input == nil {
 		return nil
 	}

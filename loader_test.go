@@ -7,28 +7,10 @@ import (
 	"github.com/qjebbs/go-jsons"
 )
 
-func TestLoadToNilTarget(t *testing.T) {
-	m := jsons.NewMerger()
-	m.RegisterDefaultLoader()
-	err := m.MergeToMap([]byte("{}"), nil)
-	if err == nil {
-		t.Error("want error, got nil")
-	}
-}
-func TestLoadToNilTarget2(t *testing.T) {
-	m := jsons.NewMerger()
-	m.RegisterDefaultLoader()
-	err := m.MergeToMapAs(jsons.FormatJSON, []byte("{}"), nil)
-	if err == nil {
-		t.Error("want error, got nil")
-	}
-}
-
 func TestLoadUnsupportInput(t *testing.T) {
 	m := jsons.NewMerger()
 	m.RegisterDefaultLoader()
-	target := make(map[string]interface{})
-	err := m.MergeToMap(true, target)
+	_, err := m.Merge(true)
 	if err == nil {
 		t.Error("want error, got nil")
 	}
@@ -37,8 +19,7 @@ func TestLoadUnsupportInput(t *testing.T) {
 func TestLoadUnsupportInput2(t *testing.T) {
 	m := jsons.NewMerger()
 	m.RegisterDefaultLoader()
-	target := make(map[string]interface{})
-	err := m.MergeToMapAs(jsons.FormatJSON, true, target)
+	_, err := m.MergeAs(jsons.FormatAuto, true)
 	if err == nil {
 		t.Error("want error, got nil")
 	}
@@ -47,8 +28,7 @@ func TestLoadUnsupportInput2(t *testing.T) {
 func TestLoadNilInput(t *testing.T) {
 	m := jsons.NewMerger()
 	m.RegisterDefaultLoader()
-	target := make(map[string]interface{})
-	err := m.MergeToMap(nil, target)
+	_, err := m.Merge(nil)
 	if err != nil {
 		t.Errorf("want nil, got: %s", err)
 	}
@@ -57,8 +37,7 @@ func TestLoadNilInput(t *testing.T) {
 func TestLoadNilInput2(t *testing.T) {
 	m := jsons.NewMerger()
 	m.RegisterDefaultLoader()
-	target := make(map[string]interface{})
-	err := m.MergeToMapAs(jsons.FormatJSON, nil, target)
+	_, err := m.MergeAs(jsons.FormatJSON, nil)
 	if err != nil {
 		t.Errorf("want nil, got: %s", err)
 	}
@@ -67,9 +46,7 @@ func TestLoadNilInput2(t *testing.T) {
 func TestLoadReaderError(t *testing.T) {
 	m := jsons.NewMerger()
 	m.RegisterDefaultLoader()
-
-	target := make(map[string]interface{})
-	err := m.MergeToMapAs(jsons.FormatJSON, &errReader{}, target)
+	_, err := m.MergeAs(jsons.FormatJSON, &errReader{})
 	if err == nil {
 		t.Error("want error, got nil")
 	}
