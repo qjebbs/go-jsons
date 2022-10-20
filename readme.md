@@ -85,9 +85,9 @@ Output:
 
 ## Load From Other Formats
 
-`go-jsons` supports only `JSON`, but it allows you to extend it to support other formats easily.
+`go-jsons` allows you to extend it to load other formats easily.
 
-For example, to support merge from `YAML` files to `JSON`:
+For example, to support load from `YAML` files and merge to `JSON`:
 
 ```go
 package main
