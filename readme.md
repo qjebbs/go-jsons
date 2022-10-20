@@ -126,11 +126,3 @@ func main() {
 	fmt.Println(string(got)) // {"a":1,"b":1}
 }
 ```
-
-## External Dependencies
-
-The library depends only on `Go` standard library, no external dependencies.
-
-Projects used for testing only:
-
-- [gopkg.in/yaml.v3](https://gopkg.in/yaml.v3)
