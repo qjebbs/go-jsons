@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/qjebbs/go-jsons"
-	"github.com/qjebbs/go-jsons/helper"
 	"gopkg.in/yaml.v3"
 )
 
@@ -41,13 +40,12 @@ func TestRegisterYAML(t *testing.T) {
 		"yaml",
 		[]string{".yaml", ".yml"},
 		func(b []byte) (map[string]interface{}, error) {
-			m1 := make(map[interface{}]interface{})
-			err := yaml.Unmarshal(b, &m1)
+			m := make(map[string]interface{})
+			err := yaml.Unmarshal(b, &m)
 			if err != nil {
 				return nil, err
 			}
-			m2 := helper.ConvertYAMLMap(m1)
-			return m2, nil
+			return m, nil
 		},
 	)
 	a := []byte(`a: 1`)

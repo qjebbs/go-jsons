@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/qjebbs/go-jsons"
-	"github.com/qjebbs/go-jsons/helper"
 	"gopkg.in/yaml.v3"
 )
 
@@ -16,12 +15,12 @@ func TestMergeMixFormats(t *testing.T) {
 		FormatYAML,
 		[]string{".yaml", ".yml"},
 		func(b []byte) (map[string]interface{}, error) {
-			m := make(map[interface{}]interface{})
+			m := make(map[string]interface{})
 			err := yaml.Unmarshal(b, &m)
 			if err != nil {
 				return nil, err
 			}
-			return helper.ConvertYAMLMap(m), nil
+			return m, nil
 		},
 	)
 	if err != nil {

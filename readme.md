@@ -96,8 +96,8 @@ import (
 	"fmt"
 
 	"github.com/qjebbs/go-jsons"
-	"github.com/qjebbs/go-jsons/merge"
-	"github.com/qjebbs/go-jsons/helper"
+	// yaml v3 is required, since v2 generates `map[interface{}]interface{}`,
+	// which is not compatible with json.Marshal
 	"gopkg.in/yaml.v3"
 )
 
@@ -109,12 +109,12 @@ func main() {
 		FormatYAML,
 		[]string{".yaml", ".yml"},
 		func(b []byte) (map[string]interface{}, error) {
-			m := make(map[interface{}]interface{})
+			m := make(map[string]interface{})
 			err := yaml.Unmarshal(b, &m)
 			if err != nil {
 				return nil, err
 			}
-			return helper.ConvertYAMLMap(m), nil
+			return m, nil
 		},
 	)
 	a := []byte(`{"a": 1}`) // json
