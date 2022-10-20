@@ -9,8 +9,8 @@ import (
 	"github.com/qjebbs/go-jsons/merge"
 )
 
-// ConvertFunc converts the input bytes of a config content to map[string]interface{}
-type ConvertFunc func([]byte) (map[string]interface{}, error)
+// LoadFunc load the input bytes to map[string]interface{}
+type LoadFunc func([]byte) (map[string]interface{}, error)
 
 // loader is a configurable loader for specific format files.
 type loader struct {
@@ -23,7 +23,7 @@ type loader struct {
 type loadFunc func(input interface{}, target map[string]interface{}) error
 
 // makeLoader makes a merger who merge the format by converting it to JSON
-func makeLoader(name Format, extensions []string, converter ConvertFunc) *loader {
+func makeLoader(name Format, extensions []string, converter LoadFunc) *loader {
 	return &loader{
 		Name:       name,
 		Extensions: extensions,
@@ -32,7 +32,7 @@ func makeLoader(name Format, extensions []string, converter ConvertFunc) *loader
 }
 
 // makeLoadFunc makes a merge func who merge the input to
-func makeLoadFunc(converter ConvertFunc) loadFunc {
+func makeLoadFunc(converter LoadFunc) loadFunc {
 	return func(input interface{}, target map[string]interface{}) error {
 		if target == nil {
 			return errors.New("target is nil")
@@ -68,7 +68,7 @@ func makeLoadFunc(converter ConvertFunc) loadFunc {
 	}
 }
 
-func loadFiles(files []string, target map[string]interface{}, converter ConvertFunc) error {
+func loadFiles(files []string, target map[string]interface{}, converter LoadFunc) error {
 	for _, file := range files {
 		err := loadFile(file, target, converter)
 		if err != nil {
@@ -78,7 +78,7 @@ func loadFiles(files []string, target map[string]interface{}, converter ConvertF
 	return nil
 }
 
-func loadFile(file string, target map[string]interface{}, converter ConvertFunc) error {
+func loadFile(file string, target map[string]interface{}, converter LoadFunc) error {
 	bs, err := loadToBytes(file)
 	if err != nil {
 		return fmt.Errorf("fail to load %s: %s", file, err)
@@ -86,7 +86,7 @@ func loadFile(file string, target map[string]interface{}, converter ConvertFunc)
 	return loadBytes(bs, target, converter)
 }
 
-func loadReader(reader io.Reader, target map[string]interface{}, converter ConvertFunc) error {
+func loadReader(reader io.Reader, target map[string]interface{}, converter LoadFunc) error {
 	bs, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return err
@@ -94,7 +94,7 @@ func loadReader(reader io.Reader, target map[string]interface{}, converter Conve
 	return loadBytes(bs, target, converter)
 }
 
-func loadBytes(bs []byte, target map[string]interface{}, converter ConvertFunc) error {
+func loadBytes(bs []byte, target map[string]interface{}, converter LoadFunc) error {
 	m, err := converter(bs)
 	if err != nil {
 		return err

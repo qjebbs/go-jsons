@@ -7,11 +7,11 @@ import (
 )
 
 // RegisterLoader register a new format loader.
-func (m *Merger) RegisterLoader(name Format, extensions []string, converter ConvertFunc) error {
+func (m *Merger) RegisterLoader(name Format, extensions []string, fn LoadFunc) error {
 	if _, found := m.loadersByName[name]; found {
 		return fmt.Errorf("%s already registered", name)
 	}
-	loader := makeLoader(name, extensions, converter)
+	loader := makeLoader(name, extensions, fn)
 	m.loadersByName[name] = loader
 	for _, ext := range extensions {
 		lext := strings.ToLower(ext)

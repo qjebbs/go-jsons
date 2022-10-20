@@ -5,7 +5,7 @@ import (
 
 	"github.com/qjebbs/go-jsons"
 	"github.com/qjebbs/go-jsons/helper"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 func TestMergeMixFormats(t *testing.T) {

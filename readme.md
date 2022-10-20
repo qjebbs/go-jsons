@@ -83,7 +83,7 @@ Output:
 }
 ```
 
-## Load from Other Formats
+## Load From Other Formats
 
 `go-jsons` supports only `JSON`, but it allows you to extend it to support other formats easily.
 
@@ -98,7 +98,7 @@ import (
 	"github.com/qjebbs/go-jsons"
 	"github.com/qjebbs/go-jsons/merge"
 	"github.com/qjebbs/go-jsons/helper"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 func main() {
@@ -126,3 +126,11 @@ func main() {
 	fmt.Println(string(got)) // {"a":1,"b":1}
 }
 ```
+
+## External Dependencies
+
+The library depends only on `Go` standard library, no external dependencies.
+
+Projects used for testing only:
+
+- [gopkg.in/yaml.v3](https://gopkg.in/yaml.v3)

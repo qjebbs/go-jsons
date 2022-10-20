@@ -10,7 +10,7 @@ import (
 	"github.com/qjebbs/go-jsons/merge"
 )
 
-// Merger is the jsons merger
+// Merger is the json merger
 type Merger struct {
 	loadersByName map[Format]*loader
 	loadersByExt  map[string]*loader
