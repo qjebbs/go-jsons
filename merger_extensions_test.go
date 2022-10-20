@@ -21,15 +21,6 @@ func TestGetExtensions(t *testing.T) {
 	}
 }
 
-func TestGetExtensionsError(t *testing.T) {
-	m := jsons.NewMerger()
-	m.RegisterLoader("a", []string{".a1", ".a2"}, nil)
-	_, err := m.Extensions("b")
-	if err == nil {
-		t.Error("want error, got nil")
-	}
-}
-
 func TestGetAllExtensions(t *testing.T) {
 	m := jsons.NewMerger()
 	m.RegisterLoader("a", []string{".a1", ".a2"}, nil)

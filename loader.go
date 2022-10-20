@@ -34,6 +34,7 @@ func makeLoader(name Format, extensions []string, converter LoadFunc) *loader {
 // makeLoadFunc makes a merge func who merge the input to
 func makeLoadFunc(converter LoadFunc) loadFunc {
 	return func(input interface{}, target map[string]interface{}) error {
+		// won't happen since we don't export methods to pass the target
 		if target == nil {
 			return errors.New("target is nil")
 		}

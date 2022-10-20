@@ -24,7 +24,7 @@ func TestMerge(t *testing.T) {
 func TestMergeAs(t *testing.T) {
 	a := []byte(`{"a":1}`)
 	b := []byte(`{"b":[1]}`)
-	c := []byte(`{"b":[2]}`)
+	c := strings.NewReader(`{"b":[2]}`)
 	want := []byte(`{"a":1,"b":[1,2]}`)
 	got, err := jsons.MergeAs(jsons.FormatJSON, a, b, c)
 	if err != nil {
