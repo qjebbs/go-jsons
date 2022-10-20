@@ -1,10 +1,10 @@
 package jsons
 
-// StdMerger is the standard json files merger
-var StdMerger = NewMerger()
+// stdMerger is the standard json files merger
+var stdMerger = NewMerger()
 
 func init() {
-	must(StdMerger.RegisterDefaultLoader())
+	must(stdMerger.RegisterDefaultLoader())
 }
 
 // Merge merges inputs into a single json.
@@ -19,7 +19,7 @@ func init() {
 //  - `[]string`: a list of files, either local or remote
 //  - `io.Reader`: a file content reader
 func Merge(inputs ...interface{}) ([]byte, error) {
-	return StdMerger.Merge(inputs...)
+	return stdMerger.Merge(inputs...)
 }
 
 // MergeAs loads inputs of the specific format and merges into a single json.
@@ -31,5 +31,5 @@ func Merge(inputs ...interface{}) ([]byte, error) {
 //  - `[]string`: a list of files, either local or remote
 //  - `io.Reader`: a file content reader
 func MergeAs(format Format, inputs ...interface{}) ([]byte, error) {
-	return StdMerger.MergeAs(format, inputs...)
+	return stdMerger.MergeAs(format, inputs...)
 }
