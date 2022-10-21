@@ -1,6 +1,8 @@
 # go-jsons
 
-A universal `JSON` merge library for `Go`.
+A universal `JSON` merge library for `Go`. 
+
+(test coverage: 100.0%)
 
 ## Installation
 
@@ -20,9 +22,11 @@ got, err := jsons.Merge(a, b, c) // got = []byte(`{"a":1,"b":[1,2]}`)
 ### Accepted input
 
 - `string`: path to a local file
-- `[]string`: a list of local files
+- `[]string`: paths of local files
 - `[]byte`: content of a file
-- `io.Reader`: a content reader
+- `[][]byte`: content list of files
+- `io.Reader`: content reader
+- `[]io.Reader`: content readers
 
 ## Merge rules
 

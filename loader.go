@@ -1,7 +1,6 @@
 package jsons
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -34,10 +33,6 @@ func makeLoader(name Format, extensions []string, converter LoadFunc) *loader {
 // makeLoadFunc makes a merge func who merge the input to
 func makeLoadFunc(converter LoadFunc) loadFunc {
 	return func(input interface{}, target map[string]interface{}) error {
-		// won't happen since we don't export methods to pass the target
-		if target == nil {
-			return errors.New("target is nil")
-		}
 		if input == nil {
 			return nil
 		}
@@ -57,10 +52,24 @@ func makeLoadFunc(converter LoadFunc) loadFunc {
 			if err != nil {
 				return err
 			}
+		case [][]byte:
+			for _, v := range v {
+				err := loadBytes(v, target, converter)
+				if err != nil {
+					return err
+				}
+			}
 		case io.Reader:
 			err := loadReader(v, target, converter)
 			if err != nil {
 				return err
+			}
+		case []io.Reader:
+			for _, v := range v {
+				err := loadReader(v, target, converter)
+				if err != nil {
+					return err
+				}
 			}
 		default:
 			return fmt.Errorf("unsupported input type: %T", input)

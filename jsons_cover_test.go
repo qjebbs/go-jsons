@@ -2,6 +2,7 @@ package jsons_test
 
 import (
 	"errors"
+	"io"
 	"strings"
 	"testing"
 
@@ -15,7 +16,7 @@ func TestMergeAsUnknownFormat(t *testing.T) {
 	}
 }
 
-func TestMergeFile(t *testing.T) {
+func TestMergeFileError(t *testing.T) {
 	_, err := jsons.Merge("file_not_exist.json")
 	if err == nil {
 		t.Error("want error, got nil")
@@ -39,15 +40,30 @@ func TestMergeFile(t *testing.T) {
 }
 
 func TestLoadBadBytes(t *testing.T) {
-	_, err := jsons.Merge([]byte("{"))
+	a := []byte("{")
+	_, err := jsons.Merge(a)
 	if err == nil {
 		t.Error("want error, got nil")
 	}
-	_, err = jsons.MergeAs(jsons.FormatAuto, []byte("{"))
+	_, err = jsons.MergeAs(jsons.FormatJSON, a)
 	if err == nil {
 		t.Error("want error, got nil")
 	}
 }
+func TestLoadBadBytesSlice(t *testing.T) {
+	a := [][]byte{
+		[]byte("{"),
+	}
+	_, err := jsons.Merge(a)
+	if err == nil {
+		t.Error("want error, got nil")
+	}
+	_, err = jsons.MergeAs(jsons.FormatJSON, a)
+	if err == nil {
+		t.Error("want error, got nil")
+	}
+}
+
 func TestLoadBadReader(t *testing.T) {
 	a := strings.NewReader(`{}`)
 	b := strings.NewReader(`{`)
@@ -60,6 +76,46 @@ func TestLoadBadReader(t *testing.T) {
 		t.Error("want error, got nil")
 	}
 }
+func TestLoadBadReaders(t *testing.T) {
+	a := []io.Reader{
+		strings.NewReader(`{}`),
+		strings.NewReader(`{`),
+	}
+	_, err := jsons.Merge(a)
+	if err == nil {
+		t.Error("want error, got nil")
+	}
+	_, err = jsons.MergeAs(jsons.FormatJSON, a)
+	if err == nil {
+		t.Error("want error, got nil")
+	}
+}
+
+func TestLoadReaderError(t *testing.T) {
+	a := &errReader{}
+	_, err := jsons.Merge(a)
+	if err == nil {
+		t.Error("want error, got nil")
+	}
+	_, err = jsons.MergeAs(jsons.FormatJSON, a)
+	if err == nil {
+		t.Error("want error, got nil")
+	}
+}
+func TestLoadReadersError(t *testing.T) {
+	a := []io.Reader{
+		&errReader{},
+	}
+	_, err := jsons.Merge(a)
+	if err == nil {
+		t.Error("want error, got nil")
+	}
+	_, err = jsons.MergeAs(jsons.FormatJSON, a)
+	if err == nil {
+		t.Error("want error, got nil")
+	}
+}
+
 func TestMergeApplyRulesError(t *testing.T) {
 	a := []byte(`
 	  {
@@ -110,17 +166,6 @@ func TestLoadNilInput(t *testing.T) {
 	_, err = jsons.MergeAs(jsons.FormatJSON, nil)
 	if err != nil {
 		t.Errorf("want nil, got: %s", err)
-	}
-}
-
-func TestLoadReaderError(t *testing.T) {
-	_, err := jsons.Merge(&errReader{})
-	if err == nil {
-		t.Error("want error, got nil")
-	}
-	_, err = jsons.MergeAs(jsons.FormatJSON, &errReader{})
-	if err == nil {
-		t.Error("want error, got nil")
 	}
 }
 
