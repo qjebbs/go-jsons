@@ -17,14 +17,14 @@ c := []byte(`{"b":[2]}`)
 got, err := jsons.Merge(a, b, c) // got = []byte(`{"a":1,"b":[1,2]}`)
 ```
 
-### Accepted Input
+### Accepted input
 
+- `string`: path to a local file
+- `[]string`: a list of local files
 - `[]byte`: content of a file
-- `string`: path to a file, either local or remote
-- `[]string`: a list of files, either local or remote
-- `io.Reader`: a file content reader
+- `io.Reader`: a content reader
 
-## Merge Rules
+## Merge rules
 
 The merge logic is intuitive and easy to understand:
 
@@ -83,7 +83,7 @@ Output:
 }
 ```
 
-## Load From Other Formats
+## Load from other formats
 
 `go-jsons` allows you to extend it to load other formats easily.
 
@@ -126,3 +126,11 @@ func main() {
 	fmt.Println(string(got)) // {"a":1,"b":1}
 }
 ```
+
+## Why not support remote files?
+
+Here are my considerations:
+
+- It makes the your program support remote file unexpectedly, which may be a security risk.
+- Users need to choose their own strategy for loading remote files, not hard-coded logic in the library
+- You can still merge downloaded content by `[]byte` or `io.Reader`

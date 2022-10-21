@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 
 	"github.com/qjebbs/go-jsons/merge"
 )
@@ -80,15 +80,15 @@ func loadFiles(files []string, target map[string]interface{}, converter LoadFunc
 }
 
 func loadFile(file string, target map[string]interface{}, converter LoadFunc) error {
-	bs, err := loadToBytes(file)
+	bs, err := os.ReadFile(file)
 	if err != nil {
-		return fmt.Errorf("fail to load %s: %s", file, err)
+		return err
 	}
 	return loadBytes(bs, target, converter)
 }
 
 func loadReader(reader io.Reader, target map[string]interface{}, converter LoadFunc) error {
-	bs, err := ioutil.ReadAll(reader)
+	bs, err := io.ReadAll(reader)
 	if err != nil {
 		return err
 	}
