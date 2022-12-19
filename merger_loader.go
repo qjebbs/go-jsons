@@ -11,7 +11,7 @@ func (m *Merger) RegisterLoader(name Format, extensions []string, fn LoadFunc) e
 	if _, found := m.loadersByName[name]; found {
 		return fmt.Errorf("%s already registered", name)
 	}
-	loader := makeLoader(name, extensions, fn)
+	loader := newLoader(name, extensions, fn)
 	m.loadersByName[name] = loader
 	for _, ext := range extensions {
 		lext := strings.ToLower(ext)

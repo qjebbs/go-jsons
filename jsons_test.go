@@ -23,7 +23,7 @@ func TestMerge(t *testing.T) {
 	want := []byte(`{"a":1,"b":1,"c":1,"d":1}`)
 	got, err := jsons.Merge(a, b, c, d)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	assertJSONEqual(t, want, got)
 }
@@ -40,7 +40,7 @@ func TestMergeAs(t *testing.T) {
 	want := []byte(`{"a":1,"b":1,"c":1,"d":1}`)
 	got, err := jsons.MergeAs(jsons.FormatJSON, a, b, c, d)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	assertJSONEqual(t, want, got)
 }
@@ -57,7 +57,7 @@ func TestMergeAsAuto(t *testing.T) {
 	want := []byte(`{"a":1,"b":1,"c":1,"d":1}`)
 	got, err := jsons.MergeAs(jsons.FormatAuto, a, b, c, d)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	assertJSONEqual(t, want, got)
 }
@@ -76,9 +76,9 @@ func TestMergeFiles(t *testing.T) {
 	f.Close()
 	files := []string{f.Name()}
 	bytes := []byte(`{"b":1}`)
-	got, err := jsons.MergeAs(jsons.FormatJSON, files, bytes)
+	got, err := jsons.Merge(files, bytes)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	want := []byte(`{"a":1,"b":1}`)
 	assertJSONEqual(t, want, got)

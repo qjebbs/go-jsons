@@ -30,12 +30,12 @@ func NewMerger() *Merger {
 //
 // Accepted Input:
 //
-//  - `string`: path to a local file
-//  - `[]string`: paths of local files
-//  - `[]byte`: content of a file
-//  - `[][]byte`: content list of files
-//  - `io.Reader`: content reader
-//  - `[]io.Reader`: content readers
+//   - `string`: path to a local file
+//   - `[]string`: paths of local files
+//   - `[]byte`: content of a file
+//   - `[][]byte`: content list of files
+//   - `io.Reader`: content reader
+//   - `[]io.Reader`: content readers
 func (m *Merger) Merge(inputs ...interface{}) ([]byte, error) {
 	tmp := make(map[string]interface{})
 	for _, input := range inputs {
@@ -56,12 +56,12 @@ func (m *Merger) Merge(inputs ...interface{}) ([]byte, error) {
 //
 // Accepted Input:
 //
-//  - `string`: path to a local file
-//  - `[]string`: paths of local files
-//  - `[]byte`: content of a file
-//  - `[][]byte`: content list of files
-//  - `io.Reader`: content reader
-//  - `[]io.Reader`: content readers
+//   - `string`: path to a local file
+//   - `[]string`: paths of local files
+//   - `[]byte`: content of a file
+//   - `[][]byte`: content list of files
+//   - `io.Reader`: content reader
+//   - `[]io.Reader`: content readers
 func (m *Merger) MergeAs(format Format, inputs ...interface{}) ([]byte, error) {
 	tmp := make(map[string]interface{})
 	for _, input := range inputs {
@@ -82,21 +82,21 @@ func (m *Merger) MergeAs(format Format, inputs ...interface{}) ([]byte, error) {
 //
 // Accepted Input:
 //
-//  - `string`: path to a local file
-//  - `[]string`: paths of local files
-//  - `[]byte`: content of a file
-//  - `[][]byte`: content list of files
-//  - `io.Reader`: content reader
-//  - `[]io.Reader`: content readers
+//   - `string`: path to a local file
+//   - `[]string`: paths of local files
+//   - `[]byte`: content of a file
+//   - `[][]byte`: content list of files
+//   - `io.Reader`: content reader
+//   - `[]io.Reader`: content readers
 //
 // it will neither apply "_priority" sort or "_tag" merge rules
 // nor remove helper fields. You may want to call them manually:
 //
-//  err := merge.ApplyRules(target)
-//  if err != nil {
-//  	return nil, err
-//  }
-//  merge.RemoveHelperFields(target)
+//	err := merge.ApplyRules(target)
+//	if err != nil {
+//		return nil, err
+//	}
+//	merge.RemoveHelperFields(target)
 func (m *Merger) mergeToMapAs(formatName Format, input interface{}, target map[string]interface{}) error {
 	if formatName == FormatAuto {
 		return m.mergeToMap(input, target)
@@ -105,7 +105,11 @@ func (m *Merger) mergeToMapAs(formatName Format, input interface{}, target map[s
 	if !found {
 		return fmt.Errorf("unknown format: %s", formatName)
 	}
-	return f.Merge(input, target)
+	maps, err := f.Load(input)
+	if err != nil {
+		return err
+	}
+	return merge.Maps(target, maps...)
 }
 
 // mergeToMap loads inputs and merges them into target.
@@ -114,32 +118,36 @@ func (m *Merger) mergeToMapAs(formatName Format, input interface{}, target map[s
 //
 // Accepted Input:
 //
-//  - `string`: path to a local file
-//  - `[]string`: paths of local files
-//  - `[]byte`: content of a file
-//  - `[][]byte`: content list of files
-//  - `io.Reader`: content reader
-//  - `[]io.Reader`: content readers
+//   - `string`: path to a local file
+//   - `[]string`: paths of local files
+//   - `[]byte`: content of a file
+//   - `[][]byte`: content list of files
+//   - `io.Reader`: content reader
+//   - `[]io.Reader`: content readers
 //
 // it will neither apply "_priority" sort or "_tag" merge rules
 // nor remove helper fields. You may want to call them manually:
 //
-//  err := merge.ApplyRules(target)
-//  if err != nil {
-//  	return nil, err
-//  }
-//  merge.RemoveHelperFields(target)
+//	err := merge.ApplyRules(target)
+//	if err != nil {
+//		return nil, err
+//	}
+//	merge.RemoveHelperFields(target)
 func (m *Merger) mergeToMap(input interface{}, target map[string]interface{}) error {
 	if input == nil {
 		return nil
 	}
 	switch v := input.(type) {
 	case string:
-		// try to load by extension
+		// load by file extension
 		if ext := getExtension(v); ext != "" {
 			lext := strings.ToLower(ext)
 			if f, found := m.loadersByExt[lext]; found {
-				return f.Merge(v, target)
+				m, err := f.Load(v)
+				if err != nil {
+					return err
+				}
+				return merge.Maps(target, m...)
 			}
 		}
 		err := m.tryLoaders(v, target)
@@ -179,9 +187,9 @@ func (m *Merger) mergeToMap(input interface{}, target map[string]interface{}) er
 func (m *Merger) tryLoaders(input interface{}, target map[string]interface{}) error {
 	var errs []string
 	for _, f := range m.loadersByName {
-		err := f.Merge(input, target)
+		m, err := f.Load(input)
 		if err == nil {
-			return nil
+			return merge.Maps(target, m...)
 		}
 		errs = append(errs, fmt.Sprintf("[%s] %s", f.Name, err))
 	}

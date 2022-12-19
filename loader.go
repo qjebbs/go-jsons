@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-
-	"github.com/qjebbs/go-jsons/merge"
 )
 
 // LoadFunc load the input bytes to map[string]interface{}
@@ -15,99 +13,89 @@ type LoadFunc func([]byte) (map[string]interface{}, error)
 type loader struct {
 	Name       Format
 	Extensions []string
-	Merge      loadFunc
+	LoadFunc   LoadFunc
 }
 
-// loadFunc is a function to load the input into map[string]interface{}
-type loadFunc func(input interface{}, target map[string]interface{}) error
-
 // makeLoader makes a merger who merge the format by converting it to JSON
-func makeLoader(name Format, extensions []string, converter LoadFunc) *loader {
+func newLoader(name Format, extensions []string, fn LoadFunc) *loader {
 	return &loader{
 		Name:       name,
 		Extensions: extensions,
-		Merge:      makeLoadFunc(converter),
+		LoadFunc:   fn,
 	}
 }
 
 // makeLoadFunc makes a merge func who merge the input to
-func makeLoadFunc(converter LoadFunc) loadFunc {
-	return func(input interface{}, target map[string]interface{}) error {
-		if input == nil {
-			return nil
-		}
-		switch v := input.(type) {
-		case string:
-			err := loadFile(v, target, converter)
-			if err != nil {
-				return err
-			}
-		case []string:
-			err := loadFiles(v, target, converter)
-			if err != nil {
-				return err
-			}
-		case []byte:
-			err := loadBytes(v, target, converter)
-			if err != nil {
-				return err
-			}
-		case [][]byte:
-			for _, v := range v {
-				err := loadBytes(v, target, converter)
-				if err != nil {
-					return err
-				}
-			}
-		case io.Reader:
-			err := loadReader(v, target, converter)
-			if err != nil {
-				return err
-			}
-		case []io.Reader:
-			for _, v := range v {
-				err := loadReader(v, target, converter)
-				if err != nil {
-					return err
-				}
-			}
-		default:
-			return fmt.Errorf("unsupported input type: %T", input)
-		}
-		return nil
+func (l *loader) Load(input interface{}) ([]map[string]interface{}, error) {
+	if input == nil {
+		return nil, nil
+	}
+	switch v := input.(type) {
+	case string:
+		return l.loadFiles([]string{v})
+	case []string:
+		return l.loadFiles(v)
+	case []byte:
+		return l.loadSlices([][]byte{v})
+	case [][]byte:
+		return l.loadSlices(v)
+	case io.Reader:
+		return l.loadReaders([]io.Reader{v})
+	case []io.Reader:
+		return l.loadReaders(v)
+	default:
+		return nil, fmt.Errorf("unsupported input type: %T", input)
 	}
 }
 
-func loadFiles(files []string, target map[string]interface{}, converter LoadFunc) error {
+func (l *loader) loadFiles(files []string) ([]map[string]interface{}, error) {
+	maps := make([]map[string]interface{}, 0, len(files))
 	for _, file := range files {
-		err := loadFile(file, target, converter)
+		m, err := l.loadFile(file)
 		if err != nil {
-			return err
+			return nil, err
 		}
+		maps = append(maps, m)
 	}
-	return nil
+	return maps, nil
 }
 
-func loadFile(file string, target map[string]interface{}, converter LoadFunc) error {
+func (l *loader) loadReaders(readers []io.Reader) ([]map[string]interface{}, error) {
+	maps := make([]map[string]interface{}, 0, len(readers))
+	for _, r := range readers {
+		m, err := l.loadReader(r)
+		if err != nil {
+			return nil, err
+		}
+		maps = append(maps, m)
+	}
+	return maps, nil
+}
+
+func (l *loader) loadSlices(slices [][]byte) ([]map[string]interface{}, error) {
+	maps := make([]map[string]interface{}, 0, len(slices))
+	for _, slice := range slices {
+		m, err := l.LoadFunc(slice)
+		if err != nil {
+			return nil, err
+		}
+		maps = append(maps, m)
+	}
+	return maps, nil
+}
+
+func (l *loader) loadFile(file string) (map[string]interface{}, error) {
 	bs, err := os.ReadFile(file)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return loadBytes(bs, target, converter)
+	return l.LoadFunc(bs)
 }
 
-func loadReader(reader io.Reader, target map[string]interface{}, converter LoadFunc) error {
+func (l *loader) loadReader(reader io.Reader) (map[string]interface{}, error) {
 	bs, err := io.ReadAll(reader)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return loadBytes(bs, target, converter)
-}
-
-func loadBytes(bs []byte, target map[string]interface{}, converter LoadFunc) error {
-	m, err := converter(bs)
-	if err != nil {
-		return err
-	}
-	return merge.Maps(target, m)
+	return l.LoadFunc(bs)
 }
