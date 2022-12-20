@@ -2,18 +2,11 @@
 // Use of this source code is governed by MIT
 // license that can be found in the LICENSE file.
 
-package merge
+package rule
 
-func getTag(v map[string]interface{}) string {
-	if field, ok := v[tagKey]; ok {
-		if t, ok := field.(string); ok {
-			return t
-		}
-	}
-	return ""
-}
+import "github.com/qjebbs/go-jsons/merge"
 
-func mergeSameTag(s []interface{}) ([]interface{}, error) {
+func mergeByFields(s []interface{}, fields []Field) ([]interface{}, error) {
 	// from: [a,"",b,"",a,"",b,""]
 	// to: [a,"",b,"",merged,"",merged,""]
 	merged := &struct{}{}
@@ -22,7 +15,7 @@ func mergeSameTag(s []interface{}) ([]interface{}, error) {
 		if !ok {
 			continue
 		}
-		tag1 := getTag(map1)
+		tag1 := getTag(map1, fields)
 		if tag1 == "" {
 			continue
 		}
@@ -31,10 +24,10 @@ func mergeSameTag(s []interface{}) ([]interface{}, error) {
 			if !ok {
 				continue
 			}
-			tag2 := getTag(map2)
+			tag2 := getTag(map2, fields)
 			if tag1 == tag2 {
 				s[j] = merged
-				err := mergeMaps(map1, map2)
+				err := merge.Maps(map1, map2)
 				if err != nil {
 					return nil, err
 				}
@@ -50,4 +43,15 @@ func mergeSameTag(s []interface{}) ([]interface{}, error) {
 		ns = append(ns, item)
 	}
 	return ns, nil
+}
+
+func getTag(v map[string]interface{}, fields []Field) string {
+	value := getField(v, fields)
+	if value == nil {
+		return ""
+	}
+	if tag, ok := value.(string); ok {
+		return tag
+	}
+	return ""
 }

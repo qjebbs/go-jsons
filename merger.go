@@ -7,19 +7,22 @@ import (
 	"strings"
 
 	"github.com/qjebbs/go-jsons/merge"
+	"github.com/qjebbs/go-jsons/rule"
 )
 
 // Merger is the json merger
 type Merger struct {
 	loadersByName map[Format]*loader
 	loadersByExt  map[string]*loader
+	rule          *rule.Rule
 }
 
 // NewMerger returns a new Merger
-func NewMerger() *Merger {
+func NewMerger(fields ...rule.Field) *Merger {
 	return &Merger{
 		loadersByName: make(map[Format]*loader),
 		loadersByExt:  make(map[string]*loader),
+		rule:          rule.NewRule(fields...),
 	}
 }
 
@@ -37,19 +40,18 @@ func NewMerger() *Merger {
 //   - `io.Reader`: content reader
 //   - `[]io.Reader`: content readers
 func (m *Merger) Merge(inputs ...interface{}) ([]byte, error) {
-	tmp := make(map[string]interface{})
+	target := make(map[string]interface{})
 	for _, input := range inputs {
-		err := m.mergeToMap(input, tmp)
+		err := m.mergeToMap(input, target)
 		if err != nil {
 			return nil, err
 		}
 	}
-	err := merge.ApplyRules(tmp)
+	err := m.rule.Apply(target)
 	if err != nil {
 		return nil, err
 	}
-	merge.RemoveHelperFields(tmp)
-	return json.Marshal(tmp)
+	return json.Marshal(target)
 }
 
 // MergeAs loads inputs of the specific format and merges into a single json.
@@ -63,40 +65,20 @@ func (m *Merger) Merge(inputs ...interface{}) ([]byte, error) {
 //   - `io.Reader`: content reader
 //   - `[]io.Reader`: content readers
 func (m *Merger) MergeAs(format Format, inputs ...interface{}) ([]byte, error) {
-	tmp := make(map[string]interface{})
+	target := make(map[string]interface{})
 	for _, input := range inputs {
-		err := m.mergeToMapAs(format, input, tmp)
+		err := m.mergeToMapAs(format, input, target)
 		if err != nil {
 			return nil, err
 		}
 	}
-	err := merge.ApplyRules(tmp)
+	err := m.rule.Apply(target)
 	if err != nil {
 		return nil, err
 	}
-	merge.RemoveHelperFields(tmp)
-	return json.Marshal(tmp)
+	return json.Marshal(target)
 }
 
-// mergeToMapAs load inputs of the specific format into target
-//
-// Accepted Input:
-//
-//   - `string`: path to a local file
-//   - `[]string`: paths of local files
-//   - `[]byte`: content of a file
-//   - `[][]byte`: content list of files
-//   - `io.Reader`: content reader
-//   - `[]io.Reader`: content readers
-//
-// it will neither apply "_priority" sort or "_tag" merge rules
-// nor remove helper fields. You may want to call them manually:
-//
-//	err := merge.ApplyRules(target)
-//	if err != nil {
-//		return nil, err
-//	}
-//	merge.RemoveHelperFields(target)
 func (m *Merger) mergeToMapAs(formatName Format, input interface{}, target map[string]interface{}) error {
 	if formatName == FormatAuto {
 		return m.mergeToMap(input, target)
@@ -112,27 +94,6 @@ func (m *Merger) mergeToMapAs(formatName Format, input interface{}, target map[s
 	return merge.Maps(target, maps...)
 }
 
-// mergeToMap loads inputs and merges them into target.
-// It detects the format by file extension, or try all mergers
-// if no extension found
-//
-// Accepted Input:
-//
-//   - `string`: path to a local file
-//   - `[]string`: paths of local files
-//   - `[]byte`: content of a file
-//   - `[][]byte`: content list of files
-//   - `io.Reader`: content reader
-//   - `[]io.Reader`: content readers
-//
-// it will neither apply "_priority" sort or "_tag" merge rules
-// nor remove helper fields. You may want to call them manually:
-//
-//	err := merge.ApplyRules(target)
-//	if err != nil {
-//		return nil, err
-//	}
-//	merge.RemoveHelperFields(target)
 func (m *Merger) mergeToMap(input interface{}, target map[string]interface{}) error {
 	if input == nil {
 		return nil

@@ -30,14 +30,27 @@ got, err := jsons.Merge(a, b, c) // got = []byte(`{"a":1,"b":[1,2]}`)
 
 ## Merge rules
 
-The merge logic is intuitive and easy to understand:
+The strandard merger has only one rule which is intuitive and easy to understand:
 
 - Simple values (`string`, `number`, `boolean`) are overwritten, others (`array`, `object`) are merged.
 
-To work with complex files and contents, especially when the order of fields of output matters, we can add `_tag` and `_priority` fields to apply more merge rules:
+To work with complex files and contents, especially when the order of items matters, you can creates a custom merger to applies more rules:
 
-- Elements with same `_tag` in an array will be merged.
-- Elements in an array will be sorted by `_priority` field, the smaller the higher priority.
+```go
+var myMerger = NewMerger(
+	rule.MergeBy("tag"),
+	rule.MergeByAndRemove("_tag"),
+	rule.OrderByAndRemove("_priority"),
+)
+myMerger.Merge("a.json", "b.json")
+```
+
+which means:
+
+- Elements with same `tag` or `_tag` in an array will be merged.
+- Elements in an array will be sorted by the value of `_priority` field, the smaller the higher priority.
+
+> `_tag` and `_priority` fields will be removes after merge, according to the codes above.
 
 Suppose we have 2 `JSON` files:
 

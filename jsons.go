@@ -14,12 +14,12 @@ func init() {
 //
 // Accepted Input:
 //
-//  - `string`: path to a local file
-//  - `[]string`: paths of local files
-//  - `[]byte`: content of a file
-//  - `[][]byte`: content list of files
-//  - `io.Reader`: content reader
-//  - `[]io.Reader`: content readers
+//   - `string`: path to a local file
+//   - `[]string`: paths of local files
+//   - `[]byte`: content of a file
+//   - `[][]byte`: content list of files
+//   - `io.Reader`: content reader
+//   - `[]io.Reader`: content readers
 func Merge(inputs ...interface{}) ([]byte, error) {
 	return stdMerger.Merge(inputs...)
 }
@@ -28,12 +28,12 @@ func Merge(inputs ...interface{}) ([]byte, error) {
 //
 // Accepted Input:
 //
-//  - `string`: path to a local file
-//  - `[]string`: paths of local files
-//  - `[]byte`: content of a file
-//  - `[][]byte`: content list of files
-//  - `io.Reader`: content reader
-//  - `[]io.Reader`: content readers
+//   - `string`: path to a local file
+//   - `[]string`: paths of local files
+//   - `[]byte`: content of a file
+//   - `[][]byte`: content list of files
+//   - `io.Reader`: content reader
+//   - `[]io.Reader`: content readers
 func MergeAs(format Format, inputs ...interface{}) ([]byte, error) {
 	return stdMerger.MergeAs(format, inputs...)
 }

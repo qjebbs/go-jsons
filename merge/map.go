@@ -29,7 +29,7 @@ func mergeMaps(target map[string]interface{}, source map[string]interface{}) (er
 			return fmt.Errorf("field '%s': %s", key, err)
 		}
 	}
-	return
+	return nil
 }
 
 func mergeField(target interface{}, source interface{}) (interface{}, error) {

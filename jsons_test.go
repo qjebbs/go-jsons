@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/qjebbs/go-jsons"
+	"github.com/qjebbs/go-jsons/rule"
 )
 
 func TestMerge(t *testing.T) {
@@ -62,6 +63,75 @@ func TestMergeAsAuto(t *testing.T) {
 	assertJSONEqual(t, want, got)
 }
 
+func TestMergeComplex(t *testing.T) {
+	a := []byte(`
+	{
+	  	"array_1": [{
+			"tag":"1",
+			"array_2": [{
+				"tag":"2",
+				"array_3.1": ["string",true,false],
+				"array_3.2": [1,2,3],
+				"number_1": 1,
+				"number_2": 1,
+				"bool_1": true,
+				"bool_2": true
+			}]
+		}]
+	}
+`)
+	b := []byte(`
+	{
+		"array_1": [{
+			"tag":"1",
+			"array_2": [{
+				"tag":"2",
+				"array_3.1": [0,1,null],
+				"array_3.2": null,
+				"number_1": 0,
+				"number_2": 1,
+				"bool_1": true,
+				"bool_2": false,
+				"null_1": null
+			}]
+		},{
+			"tag":"2",
+			"priority": -1
+		}]
+	}
+`)
+	want := []byte(`
+	{
+	  "array_1": [{
+			"tag":"2",
+			"priority": -1
+		},{
+		"tag":"1",
+		"array_2": [{
+			"tag":"2",
+			"array_3.1": ["string",true,false,0,1,null],
+			"array_3.2": [1,2,3],
+			"number_1": 0,
+			"number_2": 1,
+			"bool_1": true,
+			"bool_2": false,
+			"null_1": null
+		}]
+	  }]
+	}
+	`)
+	m := jsons.NewMerger(
+		rule.MergeBy("tag"),
+		rule.OrderBy("priority"),
+	)
+	m.RegisterDefaultLoader()
+	got, err := m.MergeAs(jsons.FormatJSON, a, b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertJSONEqual(t, want, got)
+}
+
 func TestMergeFiles(t *testing.T) {
 	f, err := os.CreateTemp("", "jsons-test-*.json")
 	if err != nil {
@@ -95,7 +165,7 @@ func assertJSONEqual(t *testing.T, want, got []byte) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(want, got) {
+	if !reflect.DeepEqual(wantMap, gotMap) {
 		t.Errorf("want:\n%s\n\ngot:\n%s", want, got)
 	}
 }

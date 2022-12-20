@@ -1,10 +1,15 @@
-package merge_test
+package rule_test
 
 import (
 	"reflect"
 	"testing"
 
-	"github.com/qjebbs/go-jsons/merge"
+	"github.com/qjebbs/go-jsons/rule"
+)
+
+var testRule = rule.NewRule(
+	rule.OrderByAndRemove("_priority"),
+	rule.MergeByAndRemove("_tag"),
 )
 
 func TestRules(t *testing.T) {
@@ -39,7 +44,7 @@ func TestRules(t *testing.T) {
 		},
 	}
 	for i, tt := range tests {
-		err := merge.ApplyRules(tt.value)
+		err := testRule.Apply(tt.value)
 		switch tt.wantErr {
 		case true:
 			if err == nil {
@@ -51,7 +56,6 @@ func TestRules(t *testing.T) {
 				t.Errorf("#%d: %s", i, err)
 				continue
 			}
-			merge.RemoveHelperFields(tt.value)
 			if !reflect.DeepEqual(tt.want, tt.value) {
 				t.Errorf("want:\n%v\n\ngot:\n%v", tt.want, tt.value)
 			}
