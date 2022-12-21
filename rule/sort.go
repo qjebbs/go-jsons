@@ -6,17 +6,37 @@ package rule
 
 import "sort"
 
+type meta struct {
+	index    int
+	priority float64
+	value    interface{}
+}
+
 // sortByFields sort slice elements by specified fields
 func sortByFields(slice []interface{}, fields []Field) {
 	if len(slice) == 0 || len(fields) == 0 {
 		return
 	}
+	metas := make([]meta, len(slice))
+	for i, v := range slice {
+		metas[i] = meta{
+			index:    i,
+			priority: getPriority(v, fields),
+			value:    v,
+		}
+	}
 	sort.Slice(
-		slice,
+		metas,
 		func(i, j int) bool {
-			return getPriority(slice[i], fields) < getPriority(slice[j], fields)
+			if metas[i].priority != metas[j].priority {
+				return metas[i].priority < metas[j].priority
+			}
+			return metas[i].index < metas[j].index
 		},
 	)
+	for i, m := range metas {
+		slice[i] = m.value
+	}
 }
 
 func getPriority(v interface{}, fields []Field) float64 {
