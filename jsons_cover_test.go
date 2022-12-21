@@ -141,6 +141,7 @@ func TestMergeApplyRulesError(t *testing.T) {
 	m := jsons.NewMerger(
 		rule.MergeBy("tag"),
 	)
+	m.RegisterDefaultLoader()
 	_, err := m.Merge(a, b)
 	if err == nil {
 		t.Error("want error, got nil")

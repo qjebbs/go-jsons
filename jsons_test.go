@@ -77,7 +77,14 @@ func TestMergeComplex(t *testing.T) {
 				"bool_1": true,
 				"bool_2": true
 			}]
-		}]
+		}],
+		"obj_1": {
+			"array_4": [
+				{ "priority": 3 },
+				{ "priority": 2 },
+				{ "priority": 1 }
+			]
+		}
 	}
 `)
 	b := []byte(`
@@ -117,7 +124,14 @@ func TestMergeComplex(t *testing.T) {
 			"bool_2": false,
 			"null_1": null
 		}]
-	  }]
+	  }],
+	  "obj_1": {
+		  "array_4": [
+			  { "priority": 1 },
+			  { "priority": 2 },
+			  { "priority": 3 }
+		  ]
+	  }
 	}
 	`)
 	m := jsons.NewMerger(

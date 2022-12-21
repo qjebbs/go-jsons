@@ -20,7 +20,7 @@ type Field struct {
 	Remove bool   // whether to remove the field after rules applied
 }
 
-// OrderBy is the order by field for sort rule
+// OrderBy is the order by field for slice sort rule
 func OrderBy(key string) Field {
 	return Field{
 		Type:   FieldTypeOrder,
@@ -29,7 +29,7 @@ func OrderBy(key string) Field {
 	}
 }
 
-// MergeBy is the merge by field for sort rule
+// MergeBy is the merge by field for slice sort rule
 func MergeBy(key string) Field {
 	return Field{
 		Type:   FieldTypeMerge,
@@ -38,7 +38,7 @@ func MergeBy(key string) Field {
 	}
 }
 
-// OrderByAndRemove is the order by field for sort rule
+// OrderByAndRemove is the order by field for slice merge rule
 func OrderByAndRemove(key string) Field {
 	return Field{
 		Type:   FieldTypeOrder,
@@ -47,7 +47,7 @@ func OrderByAndRemove(key string) Field {
 	}
 }
 
-// MergeByAndRemove is the merge by field for sort rule
+// MergeByAndRemove is the merge by field for slice merge rule
 func MergeByAndRemove(key string) Field {
 	return Field{
 		Type:   FieldTypeMerge,

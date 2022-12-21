@@ -7,6 +7,9 @@ package rule
 import "github.com/qjebbs/go-jsons/merge"
 
 func mergeByFields(s []interface{}, fields []Field) ([]interface{}, error) {
+	if len(s) == 0 || len(fields) == 0 {
+		return s, nil
+	}
 	// from: [a,"",b,"",a,"",b,""]
 	// to: [a,"",b,"",merged,"",merged,""]
 	merged := &struct{}{}

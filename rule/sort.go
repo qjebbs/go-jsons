@@ -8,7 +8,7 @@ import "sort"
 
 // sortByFields sort slice elements by specified fields
 func sortByFields(slice []interface{}, fields []Field) {
-	if len(fields) == 0 {
+	if len(slice) == 0 || len(fields) == 0 {
 		return
 	}
 	sort.Slice(
