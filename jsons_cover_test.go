@@ -141,7 +141,6 @@ func TestMergeApplyRulesError(t *testing.T) {
 	m := jsons.NewMerger(
 		rule.MergeBy("tag"),
 	)
-	m.RegisterDefaultLoader()
 	_, err := m.Merge(a, b)
 	if err == nil {
 		t.Error("want error, got nil")
@@ -184,12 +183,23 @@ func TestGetExtensionsError(t *testing.T) {
 }
 func TestRegisterLoaderError(t *testing.T) {
 	m := jsons.NewMerger()
-	m.RegisterLoader("a", []string{".a1", ".a2"}, nil)
 	err := m.RegisterLoader("a", []string{".a1", ".a2"}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = m.RegisterLoader("a", []string{".a1", ".a3"}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = m.RegisterLoader("b", []string{".a2"}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = m.RegisterLoader("b", []string{".a1"}, nil)
 	if err == nil {
 		t.Error("want error, got nil")
 	}
-	err = m.RegisterLoader("b", []string{".a1"}, nil)
+	err = m.RegisterLoader(jsons.FormatAuto, []string{".a1"}, nil)
 	if err == nil {
 		t.Error("want error, got nil")
 	}

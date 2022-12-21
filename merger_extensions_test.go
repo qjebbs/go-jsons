@@ -23,9 +23,15 @@ func TestGetExtensions(t *testing.T) {
 
 func TestGetAllExtensions(t *testing.T) {
 	m := jsons.NewMerger()
-	m.RegisterLoader("a", []string{".a1", ".a2"}, nil)
-	m.RegisterLoader("b", []string{".b1", ".b2"}, nil)
-	want := []string{".a1", ".a2", ".b1", ".b2"}
+	err := m.RegisterLoader("a", []string{".a1", ".a2"}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = m.RegisterLoader("b", []string{".b1", ".b2"}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{".a1", ".a2", ".b1", ".b2", ".json"}
 	got, err := m.Extensions(jsons.FormatAuto)
 	if err != nil {
 		t.Fatal(err)

@@ -138,7 +138,6 @@ func TestMergeComplex(t *testing.T) {
 		rule.MergeBy("tag"),
 		rule.OrderBy("priority"),
 	)
-	m.RegisterDefaultLoader()
 	got, err := m.MergeAs(jsons.FormatJSON, a, b)
 	if err != nil {
 		t.Fatal(err)

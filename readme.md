@@ -121,7 +121,6 @@ import (
 func main() {
 	const FormatYAML jsons.Format = "yaml"
 	m := jsons.NewMerger()
-	m.RegisterDefaultLoader()
 	m.RegisterLoader(
 		FormatYAML,
 		[]string{".yaml", ".yml"},

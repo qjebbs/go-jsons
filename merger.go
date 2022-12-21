@@ -19,11 +19,23 @@ type Merger struct {
 
 // NewMerger returns a new Merger
 func NewMerger(fields ...rule.Field) *Merger {
-	return &Merger{
+	m := &Merger{
 		loadersByName: make(map[Format]*loader),
 		loadersByExt:  make(map[string]*loader),
 		rule:          rule.NewRule(fields...),
 	}
+	must(m.RegisterLoader(
+		FormatJSON,
+		[]string{".json"},
+		func(v []byte) (map[string]interface{}, error) {
+			m := make(map[string]interface{})
+			if err := json.Unmarshal(v, &m); err != nil {
+				return nil, err
+			}
+			return m, nil
+		},
+	))
+	return m
 }
 
 // Merge merges inputs into a single json.
