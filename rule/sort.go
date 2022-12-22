@@ -4,7 +4,10 @@
 
 package rule
 
-import "sort"
+import (
+	"math"
+	"sort"
+)
 
 type meta struct {
 	index    int
@@ -40,28 +43,53 @@ func sortByFields(slice []interface{}, fields []Field) {
 }
 
 func getPriority(v interface{}, fields []Field) float64 {
-	value := getField(v, fields)
-	if value == nil {
-		return 0
-	}
-	switch num := value.(type) {
-	case float64:
-		return num
-	case float32:
-		return float64(num)
-	}
-	return 0
-}
-
-func getField(v interface{}, fields []Field) interface{} {
 	m, ok := v.(map[string]interface{})
 	if !ok {
-		return nil
+		return 0
 	}
+	hasField := false
+	min := math.Inf(1)
 	for _, field := range fields {
-		if p, ok := m[field.Key]; ok {
-			return p
+		value, ok := m[field.Key]
+		if !ok || value == nil {
+			continue
+		}
+		hasField = true
+		var num float64
+		switch v := value.(type) {
+		case float64:
+			num = v
+		case float32:
+			num = float64(v)
+		case int:
+			num = float64(v)
+		case int8:
+			num = float64(v)
+		case int16:
+			num = float64(v)
+		case int32:
+			num = float64(v)
+		case int64:
+			num = float64(v)
+		case uint:
+			num = float64(v)
+		case uint8:
+			num = float64(v)
+		case uint16:
+			num = float64(v)
+		case uint32:
+			num = float64(v)
+		case uint64:
+			num = float64(v)
+		default:
+			num = 0
+		}
+		if num < min {
+			min = num
 		}
 	}
-	return nil
+	if !hasField {
+		return 0
+	}
+	return min
 }

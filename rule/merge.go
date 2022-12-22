@@ -18,8 +18,8 @@ func mergeByFields(s []interface{}, fields []Field) ([]interface{}, error) {
 		if !ok {
 			continue
 		}
-		tag1 := getTag(map1, fields)
-		if tag1 == "" {
+		tags1 := getTags(map1, fields)
+		if len(tags1) == 0 {
 			continue
 		}
 		for j := i + 1; j < len(s); j++ {
@@ -27,13 +27,14 @@ func mergeByFields(s []interface{}, fields []Field) ([]interface{}, error) {
 			if !ok {
 				continue
 			}
-			tag2 := getTag(map2, fields)
-			if tag1 == tag2 {
-				s[j] = merged
-				err := merge.Maps(map1, map2)
-				if err != nil {
-					return nil, err
-				}
+			tags2 := getTags(map2, fields)
+			if !matchTags(tags1, tags2) {
+				continue
+			}
+			s[j] = merged
+			err := merge.Maps(map1, map2)
+			if err != nil {
+				return nil, err
 			}
 		}
 	}
@@ -48,13 +49,27 @@ func mergeByFields(s []interface{}, fields []Field) ([]interface{}, error) {
 	return ns, nil
 }
 
-func getTag(v map[string]interface{}, fields []Field) string {
-	value := getField(v, fields)
-	if value == nil {
-		return ""
+func matchTags(a, b []string) bool {
+	for _, tag1 := range a {
+		for _, tag2 := range b {
+			if tag1 == tag2 {
+				return true
+			}
+		}
 	}
-	if tag, ok := value.(string); ok {
-		return tag
+	return false
+}
+
+func getTags(v map[string]interface{}, fields []Field) []string {
+	tags := make([]string, 0, len(fields))
+	for _, field := range fields {
+		value, ok := v[field.Key]
+		if !ok {
+			continue
+		}
+		if tag, ok := value.(string); ok && tag != "" {
+			tags = append(tags, tag)
+		}
 	}
-	return ""
+	return tags
 }

@@ -23,18 +23,87 @@ func TestRules(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "merge_and_sort",
+			name: "sort_slice",
+			value: map[string]interface{}{
+				"a": []interface{}{
+					map[string]interface{}{"priority": float64(12)},
+					map[string]interface{}{"priority": float32(11)},
+					map[string]interface{}{"priority": int(10)},
+					map[string]interface{}{"priority": int8(9)},
+					map[string]interface{}{"priority": int16(8)},
+					map[string]interface{}{"priority": int32(7)},
+					map[string]interface{}{"priority": int64(6)},
+					map[string]interface{}{"priority": uint(5)},
+					map[string]interface{}{"priority": uint8(4)},
+					map[string]interface{}{"priority": uint16(3)},
+					map[string]interface{}{"priority": uint32(2)},
+					map[string]interface{}{"priority": uint64(1)},
+					map[string]interface{}{"priority": "str"},
+					map[string]interface{}{"priority": nil},
+					map[string]interface{}{},
+				},
+			},
+			want: map[string]interface{}{
+				"a": []interface{}{
+					map[string]interface{}{"priority": "str"},
+					map[string]interface{}{"priority": nil},
+					map[string]interface{}{},
+					map[string]interface{}{"priority": uint64(1)},
+					map[string]interface{}{"priority": uint32(2)},
+					map[string]interface{}{"priority": uint16(3)},
+					map[string]interface{}{"priority": uint8(4)},
+					map[string]interface{}{"priority": uint(5)},
+					map[string]interface{}{"priority": int64(6)},
+					map[string]interface{}{"priority": int32(7)},
+					map[string]interface{}{"priority": int16(8)},
+					map[string]interface{}{"priority": int8(9)},
+					map[string]interface{}{"priority": int(10)},
+					map[string]interface{}{"priority": float32(11)},
+					map[string]interface{}{"priority": float64(12)},
+				},
+			},
+		},
+		{
+			name: "multi_tag_sort",
+			value: map[string]interface{}{
+				"a": []interface{}{
+					map[string]interface{}{"value": 0},
+					map[string]interface{}{"_priority": 1, "priority": -1, "value": 1},
+				},
+			},
+			want: map[string]interface{}{
+				"a": []interface{}{
+					map[string]interface{}{"priority": -1, "value": 1},
+					map[string]interface{}{"value": 0},
+				},
+			},
+		},
+		{
+			name: "sort_then_merge",
 			value: map[string]interface{}{
 				"a": []interface{}{
 					map[string]interface{}{"_tag": "a", "value": 1},
-					map[string]interface{}{"_tag": "b", "_priority": -100, "value": 2},
+					map[string]interface{}{"_tag": "a", "_priority": 100, "value": 2},
 					map[string]interface{}{"_tag": "a", "value": 0},
 				},
 			},
 			want: map[string]interface{}{
 				"a": []interface{}{
-					map[string]interface{}{"value": 0},
 					map[string]interface{}{"value": 2},
+				},
+			},
+		},
+		{
+			name: "multi_tag_merge",
+			value: map[string]interface{}{
+				"a": []interface{}{
+					map[string]interface{}{"_tag": "a", "tag": "b", "value": 0},
+					map[string]interface{}{"_tag": "c", "tag": "a", "value": 1},
+				},
+			},
+			want: map[string]interface{}{
+				"a": []interface{}{
+					map[string]interface{}{"tag": "a", "value": 1},
 				},
 			},
 		},
@@ -42,14 +111,16 @@ func TestRules(t *testing.T) {
 			name: "as_is",
 			value: map[string]interface{}{
 				"a": []interface{}{
-					map[string]interface{}{"value": 0},
-					map[string]interface{}{"value": 1},
+					map[string]interface{}{"tag": "a"},
+					map[string]interface{}{"tag": "b"},
+					1, false, "str",
 				},
 			},
 			want: map[string]interface{}{
 				"a": []interface{}{
-					map[string]interface{}{"value": 0},
-					map[string]interface{}{"value": 1},
+					map[string]interface{}{"tag": "a"},
+					map[string]interface{}{"tag": "b"},
+					1, false, "str",
 				},
 			},
 		},
@@ -87,36 +158,12 @@ func TestRules(t *testing.T) {
 			},
 		},
 		{
-			name: "sort_slice",
-			value: map[string]interface{}{
-				"a": []interface{}{
-					map[string]interface{}{"priority": float64(1)},
-					map[string]interface{}{"priority": float32(0)},
-				},
-			},
-			want: map[string]interface{}{
-				"a": []interface{}{
-					map[string]interface{}{"priority": float32(0)},
-					map[string]interface{}{"priority": float64(1)},
-				},
-			},
-		},
-		{
 			name: "empty_slice",
 			value: map[string]interface{}{
 				"a": []interface{}(nil),
 			},
 			want: map[string]interface{}{
 				"a": []interface{}(nil),
-			},
-		},
-		{
-			name: "simple_value_slice",
-			value: map[string]interface{}{
-				"a": []interface{}{1, 2, 3},
-			},
-			want: map[string]interface{}{
-				"a": []interface{}{1, 2, 3},
 			},
 		},
 		{
