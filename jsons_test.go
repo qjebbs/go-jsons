@@ -80,9 +80,9 @@ func TestMergeComplex(t *testing.T) {
 		}],
 		"obj_1": {
 			"array_4": [
-				{ "priority": 3 },
-				{ "priority": 2 },
-				{ "priority": 1 }
+				{ "order": 3 },
+				{ "order": 2 },
+				{ "order": 1 }
 			]
 		}
 	}
@@ -103,7 +103,7 @@ func TestMergeComplex(t *testing.T) {
 			}]
 		},{
 			"tag":"2",
-			"priority": -1
+			"order": -1
 		}]
 	}
 `)
@@ -111,7 +111,7 @@ func TestMergeComplex(t *testing.T) {
 	{
 	  "array_1": [{
 			"tag":"2",
-			"priority": -1
+			"order": -1
 		},{
 		"tag":"1",
 		"array_2": [{
@@ -127,16 +127,16 @@ func TestMergeComplex(t *testing.T) {
 	  }],
 	  "obj_1": {
 		  "array_4": [
-			  { "priority": 1 },
-			  { "priority": 2 },
-			  { "priority": 3 }
+			  { "order": 1 },
+			  { "order": 2 },
+			  { "order": 3 }
 		  ]
 	  }
 	}
 	`)
 	m := jsons.NewMerger(
 		rule.MergeBy("tag"),
-		rule.OrderBy("priority"),
+		rule.OrderBy("order"),
 	)
 	got, err := m.MergeAs(jsons.FormatJSON, a, b)
 	if err != nil {

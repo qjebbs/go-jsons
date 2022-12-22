@@ -40,7 +40,7 @@ To work with complex files and contents, you can create a custom merger to appli
 var myMerger = NewMerger(
 	rule.MergeBy("tag"),
 	rule.MergeByAndRemove("_tag"),
-	rule.OrderByAndRemove("_priority"),
+	rule.OrderByAndRemove("_order"),
 )
 myMerger.Merge("a.json", "b.json")
 ```
@@ -48,9 +48,9 @@ myMerger.Merge("a.json", "b.json")
 which means:
 
 - Elements with same `tag` or `_tag` in an array will be merged.
-- Elements in an array will be sorted by the value of `_priority` field, the smaller the higher priority.
+- Elements in an array will be sorted by the value of `_order` field, the smaller ones are in front.
 
-> `_tag` and `_priority` fields will be removed after merge, according to the codes above.
+> `_tag` and `_order` fields will be removed after merge, according to the codes above.
 
 Suppose we have...
 
@@ -60,7 +60,7 @@ Suppose we have...
 {
   "log": {"level": "debug"},
   "inbounds": [{"tag": "in-1"}],
-  "outbounds": [{"_priority": 100, "tag": "out-1"}],
+  "outbounds": [{"_order": 100, "tag": "out-1"}],
   "route": {"rules": [
     {"_tag":"rule1","inbound":["in-1"],"outbound":"out-1"}
   ]}
@@ -72,7 +72,7 @@ Suppose we have...
 ```json
 {
   "log": {"level": "error"},
-  "outbounds": [{"_priority": -100, "tag": "out-2"}],
+  "outbounds": [{"_order": -100, "tag": "out-2"}],
   "route": {"rules": [
     {"_tag":"rule1","inbound":["in-1.1"],"outbound":"out-1.1"}
   ]}
@@ -88,7 +88,7 @@ Output:
   "inbounds": [{"tag": "in-1"}],
   "outbounds": [
     // Although out-2 is a latecomer, but it's in 
-    // the front due to the smaller "_priority"
+    // the front due to the smaller "_order"
     {"tag": "out-2"},
     {"tag": "out-1"}
   ],

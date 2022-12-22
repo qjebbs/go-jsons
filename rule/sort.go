@@ -10,9 +10,9 @@ import (
 )
 
 type meta struct {
-	index    int
-	priority float64
-	value    interface{}
+	index int
+	order float64
+	value interface{}
 }
 
 // sortByFields sort slice elements by specified fields
@@ -23,16 +23,16 @@ func sortByFields(slice []interface{}, fields []Field) {
 	metas := make([]meta, len(slice))
 	for i, v := range slice {
 		metas[i] = meta{
-			index:    i,
-			priority: getPriority(v, fields),
-			value:    v,
+			index: i,
+			order: getOrder(v, fields),
+			value: v,
 		}
 	}
 	sort.Slice(
 		metas,
 		func(i, j int) bool {
-			if metas[i].priority != metas[j].priority {
-				return metas[i].priority < metas[j].priority
+			if metas[i].order != metas[j].order {
+				return metas[i].order < metas[j].order
 			}
 			return metas[i].index < metas[j].index
 		},
@@ -42,7 +42,7 @@ func sortByFields(slice []interface{}, fields []Field) {
 	}
 }
 
-func getPriority(v interface{}, fields []Field) float64 {
+func getOrder(v interface{}, fields []Field) float64 {
 	m, ok := v.(map[string]interface{})
 	if !ok {
 		return 0

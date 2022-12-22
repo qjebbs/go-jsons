@@ -37,7 +37,7 @@ func (r *Rule) Apply(m map[string]interface{}) error {
 	return nil
 }
 
-// sortMergeSlices enumerates all slices in a map, to sort by priority and merge by tag
+// sortMergeSlices enumerates all slices in a map, to sort by order and merge by tag
 func (r *Rule) sortMergeSlices(target map[string]interface{}) error {
 	for key, value := range target {
 		if slice, ok := value.([]interface{}); ok {
