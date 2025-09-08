@@ -61,7 +61,7 @@ func matchTags(a, b []string) bool {
 func getTags(v map[string]interface{}, fields []OptionField) []string {
 	tags := make([]string, 0, len(fields))
 	for _, field := range fields {
-		value, ok := v[field.Key]
+		value, ok := v[field.Name]
 		if !ok {
 			continue
 		}

@@ -16,45 +16,45 @@ type Options struct {
 
 // OptionField is the OptionField for rules
 type OptionField struct {
-	Key    string // field key
+	Name   string // field name
 	Remove bool   // whether to remove the field after merged
 }
 
 // WithOrderBy is the order by field for slice sort rule
-func WithOrderBy(key string) Option {
+func WithOrderBy(name string) Option {
 	return func(o *Options) {
 		o.OrderBy = append(o.OrderBy, OptionField{
-			Key:    key,
+			Name:   name,
 			Remove: false,
 		})
 	}
 }
 
 // WithMergeBy is the merge by field for slice sort rule
-func WithMergeBy(key string) Option {
+func WithMergeBy(name string) Option {
 	return func(o *Options) {
 		o.MergeBy = append(o.MergeBy, OptionField{
-			Key:    key,
+			Name:   name,
 			Remove: false,
 		})
 	}
 }
 
 // WithOrderByAndRemove is the order by field for slice merge rule
-func WithOrderByAndRemove(key string) Option {
+func WithOrderByAndRemove(name string) Option {
 	return func(o *Options) {
 		o.OrderBy = append(o.OrderBy, OptionField{
-			Key:    key,
+			Name:   name,
 			Remove: true,
 		})
 	}
 }
 
 // WithMergeByAndRemove is the merge by field for slice merge rule
-func WithMergeByAndRemove(key string) Option {
+func WithMergeByAndRemove(name string) Option {
 	return func(o *Options) {
 		o.MergeBy = append(o.MergeBy, OptionField{
-			Key:    key,
+			Name:   name,
 			Remove: true,
 		})
 	}

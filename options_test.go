@@ -1,19 +1,17 @@
-package jsons_test
+package jsons
 
 import (
 	"reflect"
 	"testing"
-
-	"github.com/qjebbs/go-jsons"
 )
 
 func TestRules(t *testing.T) {
-	testRule := &jsons.Options{}
-	for _, opt := range []jsons.Option{
-		jsons.WithOrderBy("order"),
-		jsons.WithMergeBy("tag"),
-		jsons.WithOrderByAndRemove("_order"),
-		jsons.WithMergeByAndRemove("_tag"),
+	testRule := &Options{}
+	for _, opt := range []Option{
+		WithOrderBy("order"),
+		WithMergeBy("tag"),
+		WithOrderByAndRemove("_order"),
+		WithMergeByAndRemove("_tag"),
 	} {
 		opt(testRule)
 	}
@@ -183,7 +181,7 @@ func TestRules(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			err := testRule.Apply(tc.value)
+			err := testRule.apply(tc.value)
 			switch tc.wantErr {
 			case true:
 				if err == nil {
@@ -203,12 +201,12 @@ func TestRules(t *testing.T) {
 
 func TestNils(t *testing.T) {
 	t.Parallel()
-	err := (*jsons.Options)(nil).Apply(nil)
+	err := (*Options)(nil).apply(nil)
 	if err != nil {
 		t.Fatalf("want nil, got err: %s", err)
 	}
-	testRule := &jsons.Options{}
-	err = testRule.Apply(nil)
+	testRule := &Options{}
+	err = testRule.apply(nil)
 	if err != nil {
 		t.Fatalf("want nil, got err: %s", err)
 	}

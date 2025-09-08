@@ -32,15 +32,16 @@ got, err := jsons.Merge(a, b, c) // got = []byte(`{"a":1,"b":[1,2]}`)
 
 The strandard merger has only one rule which is intuitive and easy to understand:
 
-- Simple values (`string`, `number`, `boolean`) are overwritten, others (`array`, `object`) are merged.
+- Simple values (`string`, `number`, `boolean`) are overwritten by later ones.
+- Container values (`object`, `array`) are merged recursively.
 
 To work with complex files and contents, you can create a custom merger to applies more rules:
 
 ```go
-var myMerger = NewMerger(
-	rule.MergeBy("tag"),
-	rule.MergeByAndRemove("_tag"),
-	rule.OrderByAndRemove("_order"),
+var myMerger = jsons.NewMerger(
+	jsons.WithMergeBy("tag"),
+	jsons.WithMergeByAndRemove("_tag"),
+	jsons.WithOrderByAndRemove("_order"),
 )
 myMerger.Merge("a.json", "b.json")
 ```
@@ -145,7 +146,7 @@ func main() {
 
 ## Why not support remote files?
 
-Here are my considerations:
+Here are some considerations:
 
 - It makes the your program support remote file unexpectedly, which may be a security risk.
 - Users need to choose their own strategy for loading remote files, not hard-coded logic in the library

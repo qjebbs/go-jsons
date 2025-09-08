@@ -48,12 +48,12 @@ func NewMerger(options ...Option) *Merger {
 //
 // Accepted Input:
 //
-//   - `string`: path to a local file
-//   - `[]string`: paths of local files
-//   - `[]byte`: content of a file
-//   - `[][]byte`: content list of files
-//   - `io.Reader`: content reader
-//   - `[]io.Reader`: content readers
+//   - string: path to a local file
+//   - []string: paths of local files
+//   - []byte: content of a file
+//   - [][]byte: content list of files
+//   - io.Reader: content reader
+//   - []io.Reader: content readers
 func (m *Merger) Merge(inputs ...interface{}) ([]byte, error) {
 	target := make(map[string]interface{})
 	for _, input := range inputs {
@@ -62,7 +62,7 @@ func (m *Merger) Merge(inputs ...interface{}) ([]byte, error) {
 			return nil, err
 		}
 	}
-	err := m.options.Apply(target)
+	err := m.options.apply(target)
 	if err != nil {
 		return nil, err
 	}
@@ -73,12 +73,12 @@ func (m *Merger) Merge(inputs ...interface{}) ([]byte, error) {
 //
 // Accepted Input:
 //
-//   - `string`: path to a local file
-//   - `[]string`: paths of local files
-//   - `[]byte`: content of a file
-//   - `[][]byte`: content list of files
-//   - `io.Reader`: content reader
-//   - `[]io.Reader`: content readers
+//   - string: path to a local file
+//   - []string: paths of local files
+//   - []byte: content of a file
+//   - [][]byte: content list of files
+//   - io.Reader: content reader
+//   - []io.Reader: content readers
 func (m *Merger) MergeAs(format Format, inputs ...interface{}) ([]byte, error) {
 	target := make(map[string]interface{})
 	for _, input := range inputs {
@@ -87,7 +87,7 @@ func (m *Merger) MergeAs(format Format, inputs ...interface{}) ([]byte, error) {
 			return nil, err
 		}
 	}
-	err := m.options.Apply(target)
+	err := m.options.apply(target)
 	if err != nil {
 		return nil, err
 	}

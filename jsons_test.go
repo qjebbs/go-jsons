@@ -28,40 +28,6 @@ func TestMerge(t *testing.T) {
 	assertJSONEqual(t, want, got)
 }
 
-func TestMergeAs(t *testing.T) {
-	a := []byte(`{"a":1}`)
-	b := [][]byte{
-		[]byte(`{"b":1}`),
-	}
-	c := strings.NewReader(`{"c":1}`)
-	d := []io.Reader{
-		strings.NewReader(`{"d":1}`),
-	}
-	want := []byte(`{"a":1,"b":1,"c":1,"d":1}`)
-	got, err := jsons.MergeAs(jsons.FormatJSON, a, b, c, d)
-	if err != nil {
-		t.Fatal(err)
-	}
-	assertJSONEqual(t, want, got)
-}
-
-func TestMergeAsAuto(t *testing.T) {
-	a := []byte(`{"a":1}`)
-	b := [][]byte{
-		[]byte(`{"b":1}`),
-	}
-	c := strings.NewReader(`{"c":1}`)
-	d := []io.Reader{
-		strings.NewReader(`{"d":1}`),
-	}
-	want := []byte(`{"a":1,"b":1,"c":1,"d":1}`)
-	got, err := jsons.MergeAs(jsons.FormatAuto, a, b, c, d)
-	if err != nil {
-		t.Fatal(err)
-	}
-	assertJSONEqual(t, want, got)
-}
-
 func TestMergeComplex(t *testing.T) {
 	a := []byte(`
 	{

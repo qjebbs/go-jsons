@@ -4,8 +4,8 @@
 
 package jsons
 
-// Apply applies rule according to m
-func (r *Options) Apply(m map[string]interface{}) error {
+// apply applies rule according to m
+func (r *Options) apply(m map[string]interface{}) error {
 	if r == nil || (len(r.MergeBy) == 0 && len(r.OrderBy) == 0) {
 		return nil
 	}
@@ -58,13 +58,13 @@ func (r *Options) removeHelperFields(target map[string]interface{}) {
 // shouldDelete tells if the field should be deleted according to the rules
 func (r *Options) shouldDelete(key string) bool {
 	for _, field := range r.MergeBy {
-		if key != field.Key {
+		if key != field.Name {
 			continue
 		}
 		return field.Remove
 	}
 	for _, field := range r.OrderBy {
-		if key != field.Key {
+		if key != field.Name {
 			continue
 		}
 		return field.Remove

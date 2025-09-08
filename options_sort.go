@@ -50,7 +50,7 @@ func getOrder(v interface{}, fields []OptionField) float64 {
 	hasField := false
 	min := math.Inf(1)
 	for _, field := range fields {
-		value, ok := m[field.Key]
+		value, ok := m[field.Name]
 		if !ok || value == nil {
 			continue
 		}

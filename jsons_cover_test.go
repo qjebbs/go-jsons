@@ -9,31 +9,69 @@ import (
 	"github.com/qjebbs/go-jsons"
 )
 
+func TestMergeAs(t *testing.T) {
+	a := []byte(`{"a":1}`)
+	b := [][]byte{
+		[]byte(`{"b":1}`),
+	}
+	c := strings.NewReader(`{"c":1}`)
+	d := []io.Reader{
+		strings.NewReader(`{"d":1}`),
+	}
+	want := []byte(`{"a":1,"b":1,"c":1,"d":1}`)
+	m := jsons.NewMerger()
+	got, err := m.MergeAs(jsons.FormatJSON, a, b, c, d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertJSONEqual(t, want, got)
+}
+
+func TestMergeAsAuto(t *testing.T) {
+	a := []byte(`{"a":1}`)
+	b := [][]byte{
+		[]byte(`{"b":1}`),
+	}
+	c := strings.NewReader(`{"c":1}`)
+	d := []io.Reader{
+		strings.NewReader(`{"d":1}`),
+	}
+	want := []byte(`{"a":1,"b":1,"c":1,"d":1}`)
+	m := jsons.NewMerger()
+	got, err := m.MergeAs(jsons.FormatAuto, a, b, c, d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertJSONEqual(t, want, got)
+}
+
 func TestMergeAsUnknownFormat(t *testing.T) {
-	_, err := jsons.MergeAs("unknown", []byte(`{}`))
+	m := jsons.NewMerger()
+	_, err := m.MergeAs("unknown", []byte(`{}`))
 	if err == nil {
 		t.Error("want error, got nil")
 	}
 }
 
 func TestMergeFileError(t *testing.T) {
-	_, err := jsons.Merge("file_not_exist.json")
+	m := jsons.NewMerger()
+	_, err := m.Merge("file_not_exist.json")
 	if err == nil {
 		t.Error("want error, got nil")
 	}
-	_, err = jsons.Merge([]string{"file_not_exist.unknown"})
+	_, err = m.Merge([]string{"file_not_exist.unknown"})
 	if err == nil {
 		t.Error("want error, got nil")
 	}
-	_, err = jsons.Merge([]string{"file_not_exist.json"})
+	_, err = m.Merge([]string{"file_not_exist.json"})
 	if err == nil {
 		t.Error("want error, got nil")
 	}
-	_, err = jsons.MergeAs(jsons.FormatJSON, "file_not_exist.json")
+	_, err = m.MergeAs(jsons.FormatJSON, "file_not_exist.json")
 	if err == nil {
 		t.Error("want error, got nil")
 	}
-	_, err = jsons.MergeAs(jsons.FormatJSON, []string{"file_not_exist.unknown"})
+	_, err = m.MergeAs(jsons.FormatJSON, []string{"file_not_exist.unknown"})
 	if err == nil {
 		t.Error("want error, got nil")
 	}
@@ -45,7 +83,8 @@ func TestLoadBadBytes(t *testing.T) {
 	if err == nil {
 		t.Error("want error, got nil")
 	}
-	_, err = jsons.MergeAs(jsons.FormatJSON, a)
+	m := jsons.NewMerger()
+	_, err = m.MergeAs(jsons.FormatJSON, a)
 	if err == nil {
 		t.Error("want error, got nil")
 	}
@@ -58,7 +97,8 @@ func TestLoadBadBytesSlice(t *testing.T) {
 	if err == nil {
 		t.Error("want error, got nil")
 	}
-	_, err = jsons.MergeAs(jsons.FormatJSON, a)
+	m := jsons.NewMerger()
+	_, err = m.MergeAs(jsons.FormatJSON, a)
 	if err == nil {
 		t.Error("want error, got nil")
 	}
@@ -71,7 +111,8 @@ func TestLoadBadReader(t *testing.T) {
 	if err == nil {
 		t.Error("want error, got nil")
 	}
-	_, err = jsons.MergeAs(jsons.FormatJSON, a, b)
+	m := jsons.NewMerger()
+	_, err = m.MergeAs(jsons.FormatJSON, a, b)
 	if err == nil {
 		t.Error("want error, got nil")
 	}
@@ -85,7 +126,8 @@ func TestLoadBadReaders(t *testing.T) {
 	if err == nil {
 		t.Error("want error, got nil")
 	}
-	_, err = jsons.MergeAs(jsons.FormatJSON, a)
+	m := jsons.NewMerger()
+	_, err = m.MergeAs(jsons.FormatJSON, a)
 	if err == nil {
 		t.Error("want error, got nil")
 	}
@@ -97,7 +139,8 @@ func TestLoadReaderError(t *testing.T) {
 	if err == nil {
 		t.Error("want error, got nil")
 	}
-	_, err = jsons.MergeAs(jsons.FormatJSON, a)
+	m := jsons.NewMerger()
+	_, err = m.MergeAs(jsons.FormatJSON, a)
 	if err == nil {
 		t.Error("want error, got nil")
 	}
@@ -110,7 +153,8 @@ func TestLoadReadersError(t *testing.T) {
 	if err == nil {
 		t.Error("want error, got nil")
 	}
-	_, err = jsons.MergeAs(jsons.FormatJSON, a)
+	m := jsons.NewMerger()
+	_, err = m.MergeAs(jsons.FormatJSON, a)
 	if err == nil {
 		t.Error("want error, got nil")
 	}
@@ -155,7 +199,8 @@ func TestLoadUnsupportInput(t *testing.T) {
 	if err == nil {
 		t.Error("want error, got nil")
 	}
-	_, err = jsons.MergeAs(jsons.FormatJSON, true)
+	m := jsons.NewMerger()
+	_, err = m.MergeAs(jsons.FormatJSON, true)
 	if err == nil {
 		t.Error("want error, got nil")
 	}
@@ -166,7 +211,8 @@ func TestLoadNilInput(t *testing.T) {
 	if err != nil {
 		t.Errorf("want nil, got: %s", err)
 	}
-	_, err = jsons.MergeAs(jsons.FormatJSON, nil)
+	m := jsons.NewMerger()
+	_, err = m.MergeAs(jsons.FormatJSON, nil)
 	if err != nil {
 		t.Errorf("want nil, got: %s", err)
 	}
