@@ -144,6 +144,20 @@ func TestMergeComplex(t *testing.T) {
 	assertJSONEqual(t, want, got)
 }
 
+func TestMergeTypeOverride(t *testing.T) {
+	a := []byte(`{"a":1}`)
+	b := []byte(`{"b":false}`)
+	c := []byte(`{"b":1}`)
+	want := []byte(`{"a":1,"b":1}`)
+
+	m := jsons.NewMerger(jsons.WithTypeOverride(true))
+	got, err := m.Merge(a, b, c)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertJSONEqual(t, want, got)
+}
+
 func TestMergeFiles(t *testing.T) {
 	f, err := os.CreateTemp("", "jsons-test-*.json")
 	if err != nil {

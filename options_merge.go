@@ -4,7 +4,7 @@
 
 package jsons
 
-func mergeByFields(s []interface{}, fields []OptionField) ([]interface{}, error) {
+func mergeByFields(typeOverride bool, s []interface{}, fields []OptionField) ([]interface{}, error) {
 	if len(s) == 0 || len(fields) == 0 {
 		return s, nil
 	}
@@ -30,7 +30,7 @@ func mergeByFields(s []interface{}, fields []OptionField) ([]interface{}, error)
 				continue
 			}
 			s[j] = merged
-			err := mergeMaps(map1, map2)
+			err := mergeMaps(typeOverride, map1, map2)
 			if err != nil {
 				return nil, err
 			}

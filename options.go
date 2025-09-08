@@ -4,76 +4,65 @@
 
 package jsons
 
+// Option is the option for merger
+type Option func(o *Options)
+
 // Options is the merge rules
 type Options struct {
-	OrderBy []OptionField
-	MergeBy []OptionField
+	OrderBy      []OptionField
+	MergeBy      []OptionField
+	TypeOverride bool
 }
 
-// Apply applies rule according to m
-func (r *Options) Apply(m map[string]interface{}) error {
-	if r == nil || (len(r.MergeBy) == 0 && len(r.OrderBy) == 0) {
-		return nil
-	}
-	err := r.sortMergeSlices(m)
-	if err != nil {
-		return err
-	}
-	r.removeHelperFields(m)
-	return nil
+// OptionField is the OptionField for rules
+type OptionField struct {
+	Key    string // field key
+	Remove bool   // whether to remove the field after merged
 }
 
-// sortMergeSlices enumerates all slices in a map, to sort by order and merge by tag
-func (r *Options) sortMergeSlices(target map[string]interface{}) error {
-	for key, value := range target {
-		if slice, ok := value.([]interface{}); ok {
-			sortByFields(slice, r.OrderBy)
-			s, err := mergeByFields(slice, r.MergeBy)
-			if err != nil {
-				return err
-			}
-			target[key] = s
-			for _, item := range s {
-				if m, ok := item.(map[string]interface{}); ok {
-					r.sortMergeSlices(m)
-				}
-			}
-		} else if field, ok := value.(map[string]interface{}); ok {
-			r.sortMergeSlices(field)
-		}
-	}
-	return nil
-}
-
-func (r *Options) removeHelperFields(target map[string]interface{}) {
-	for key, value := range target {
-		if r.shouldDelete(key) {
-			delete(target, key)
-		} else if slice, ok := value.([]interface{}); ok {
-			for _, e := range slice {
-				if el, ok := e.(map[string]interface{}); ok {
-					r.removeHelperFields(el)
-				}
-			}
-		} else if field, ok := value.(map[string]interface{}); ok {
-			r.removeHelperFields(field)
-		}
+// WithOrderBy is the order by field for slice sort rule
+func WithOrderBy(key string) Option {
+	return func(o *Options) {
+		o.OrderBy = append(o.OrderBy, OptionField{
+			Key:    key,
+			Remove: false,
+		})
 	}
 }
 
-// shouldDelete tells if the field should be deleted according to the rules
-func (r *Options) shouldDelete(key string) bool {
-	for _, field := range r.MergeBy {
-		if key != field.Key {
-			continue
-		}
-		return field.Remove
+// WithMergeBy is the merge by field for slice sort rule
+func WithMergeBy(key string) Option {
+	return func(o *Options) {
+		o.MergeBy = append(o.MergeBy, OptionField{
+			Key:    key,
+			Remove: false,
+		})
 	}
-	for _, field := range r.OrderBy {
-		if key != field.Key {
-			continue
-		}
-		return field.Remove
+}
+
+// WithOrderByAndRemove is the order by field for slice merge rule
+func WithOrderByAndRemove(key string) Option {
+	return func(o *Options) {
+		o.OrderBy = append(o.OrderBy, OptionField{
+			Key:    key,
+			Remove: true,
+		})
 	}
-	return false
+}
+
+// WithMergeByAndRemove is the merge by field for slice merge rule
+func WithMergeByAndRemove(key string) Option {
+	return func(o *Options) {
+		o.MergeBy = append(o.MergeBy, OptionField{
+			Key:    key,
+			Remove: true,
+		})
+	}
+}
+
+// WithTypeOverride sets whether to override the type when merging.
+func WithTypeOverride(override bool) Option {
+	return func(o *Options) {
+		o.TypeOverride = override
+	}
 }

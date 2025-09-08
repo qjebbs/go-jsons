@@ -8,10 +8,11 @@ import (
 func TestMergeMaps(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
-		name    string
-		values  []map[string]interface{}
-		want    map[string]interface{}
-		wantErr bool
+		name         string
+		typeOverride bool
+		values       []map[string]interface{}
+		want         map[string]interface{}
+		wantErr      bool
 	}{
 		{
 			name: "fields_merge",
@@ -55,6 +56,17 @@ func TestMergeMaps(t *testing.T) {
 			},
 		},
 		{
+			name:         "type_override",
+			typeOverride: true,
+			values: []map[string]interface{}{
+				{"a": false},
+				{"a": 3},
+			},
+			want: map[string]interface{}{
+				"a": 3,
+			},
+		},
+		{
 			name: "mismatch_type",
 			values: []map[string]interface{}{
 				{"a": false},
@@ -68,7 +80,7 @@ func TestMergeMaps(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			got := make(map[string]interface{})
-			err := mergeMaps(got, tc.values...)
+			err := mergeMaps(tc.typeOverride, got, tc.values...)
 			switch tc.wantErr {
 			case true:
 				if err == nil {

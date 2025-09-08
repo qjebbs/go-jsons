@@ -106,7 +106,7 @@ func (m *Merger) mergeToMapAs(formatName Format, input interface{}, target map[s
 	if err != nil {
 		return err
 	}
-	return mergeMaps(target, maps...)
+	return mergeMaps(m.options.TypeOverride, target, maps...)
 }
 
 func (m *Merger) mergeToMap(input interface{}, target map[string]interface{}) error {
@@ -119,11 +119,11 @@ func (m *Merger) mergeToMap(input interface{}, target map[string]interface{}) er
 		if ext := getExtension(v); ext != "" {
 			lext := strings.ToLower(ext)
 			if f, found := m.loadersByExt[lext]; found {
-				m, err := f.Load(v)
+				mp, err := f.Load(v)
 				if err != nil {
 					return err
 				}
-				return mergeMaps(target, m...)
+				return mergeMaps(m.options.TypeOverride, target, mp...)
 			}
 		}
 		err := m.tryLoaders(v, target)
@@ -163,9 +163,9 @@ func (m *Merger) mergeToMap(input interface{}, target map[string]interface{}) er
 func (m *Merger) tryLoaders(input interface{}, target map[string]interface{}) error {
 	var errs []string
 	for _, f := range m.loadersByName {
-		m, err := f.Load(input)
+		mp, err := f.Load(input)
 		if err == nil {
-			return mergeMaps(target, m...)
+			return mergeMaps(m.options.TypeOverride, target, mp...)
 		}
 		errs = append(errs, fmt.Sprintf("[%s] %s", f.Name, err))
 	}

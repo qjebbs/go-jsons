@@ -10,9 +10,9 @@ import (
 )
 
 // mergeMaps merges source maps into target
-func mergeMaps(target map[string]interface{}, sources ...map[string]interface{}) (err error) {
+func mergeMaps(typeOverride bool, target map[string]interface{}, sources ...map[string]interface{}) (err error) {
 	for _, source := range sources {
-		err = mergeMap(target, source)
+		err = mergeMap(typeOverride, target, source)
 		if err != nil {
 			return err
 		}
@@ -22,9 +22,9 @@ func mergeMaps(target map[string]interface{}, sources ...map[string]interface{})
 
 // mergeMap merges source map into target
 // it supports only map[string]interface{} type for any children of the map tree
-func mergeMap(target map[string]interface{}, source map[string]interface{}) (err error) {
+func mergeMap(typeOverride bool, target map[string]interface{}, source map[string]interface{}) (err error) {
 	for key, value := range source {
-		target[key], err = mergeField(target[key], value)
+		target[key], err = mergeField(typeOverride, target[key], value)
 		if err != nil {
 			return fmt.Errorf("field '%s': %s", key, err)
 		}
@@ -32,7 +32,7 @@ func mergeMap(target map[string]interface{}, source map[string]interface{}) (err
 	return nil
 }
 
-func mergeField(target interface{}, source interface{}) (interface{}, error) {
+func mergeField(typeOverride bool, target interface{}, source interface{}) (interface{}, error) {
 	if source == nil {
 		return target, nil
 	}
@@ -40,15 +40,19 @@ func mergeField(target interface{}, source interface{}) (interface{}, error) {
 		return source, nil
 	}
 	if reflect.TypeOf(source) != reflect.TypeOf(target) {
-		return nil, fmt.Errorf("type mismatch, expect %T, incoming %T", target, source)
+		if !typeOverride {
+			return nil, fmt.Errorf("type mismatch, expect %T, incoming %T", target, source)
+		}
+		return source, nil
 	}
 	if slice, ok := source.([]interface{}); ok {
 		tslice, _ := target.([]interface{})
 		tslice = append(tslice, slice...)
 		return tslice, nil
-	} else if smap, ok := source.(map[string]interface{}); ok {
+	}
+	if smap, ok := source.(map[string]interface{}); ok {
 		tmap, _ := target.(map[string]interface{})
-		err := mergeMap(tmap, smap)
+		err := mergeMap(typeOverride, tmap, smap)
 		return tmap, err
 	}
 	return source, nil
