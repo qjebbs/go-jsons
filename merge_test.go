@@ -1,13 +1,11 @@
-package merge_test
+package jsons
 
 import (
 	"reflect"
 	"testing"
-
-	"github.com/qjebbs/go-jsons/merge"
 )
 
-func TestMap(t *testing.T) {
+func TestMergeMaps(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
 		name    string
@@ -70,7 +68,7 @@ func TestMap(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			got := make(map[string]interface{})
-			err := merge.Maps(got, tc.values...)
+			err := mergeMaps(got, tc.values...)
 			switch tc.wantErr {
 			case true:
 				if err == nil {

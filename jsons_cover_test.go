@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/qjebbs/go-jsons"
-	"github.com/qjebbs/go-jsons/rule"
 )
 
 func TestMergeAsUnknownFormat(t *testing.T) {
@@ -139,7 +138,7 @@ func TestMergeApplyRulesError(t *testing.T) {
 	  }
 	`)
 	m := jsons.NewMerger(
-		rule.MergeBy("tag"),
+		jsons.WithMergeBy("tag"),
 	)
 	_, err := m.Merge(a, b)
 	if err == nil {

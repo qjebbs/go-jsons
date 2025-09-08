@@ -2,30 +2,16 @@
 // Use of this source code is governed by MIT
 // license that can be found in the LICENSE file.
 
-package rule
+package jsons
 
-// Rule is the merge rules
-type Rule struct {
-	OrderBy []Field
-	MergeBy []Field
-}
-
-// NewRule makes a new Rule
-func NewRule(fields ...Field) *Rule {
-	r := &Rule{}
-	for _, field := range fields {
-		switch field.Type {
-		case FieldTypeMerge:
-			r.MergeBy = append(r.MergeBy, field)
-		case FieldTypeOrder:
-			r.OrderBy = append(r.OrderBy, field)
-		}
-	}
-	return r
+// Options is the merge rules
+type Options struct {
+	OrderBy []OptionField
+	MergeBy []OptionField
 }
 
 // Apply applies rule according to m
-func (r *Rule) Apply(m map[string]interface{}) error {
+func (r *Options) Apply(m map[string]interface{}) error {
 	if r == nil || (len(r.MergeBy) == 0 && len(r.OrderBy) == 0) {
 		return nil
 	}
@@ -38,7 +24,7 @@ func (r *Rule) Apply(m map[string]interface{}) error {
 }
 
 // sortMergeSlices enumerates all slices in a map, to sort by order and merge by tag
-func (r *Rule) sortMergeSlices(target map[string]interface{}) error {
+func (r *Options) sortMergeSlices(target map[string]interface{}) error {
 	for key, value := range target {
 		if slice, ok := value.([]interface{}); ok {
 			sortByFields(slice, r.OrderBy)
@@ -59,7 +45,7 @@ func (r *Rule) sortMergeSlices(target map[string]interface{}) error {
 	return nil
 }
 
-func (r *Rule) removeHelperFields(target map[string]interface{}) {
+func (r *Options) removeHelperFields(target map[string]interface{}) {
 	for key, value := range target {
 		if r.shouldDelete(key) {
 			delete(target, key)
@@ -76,7 +62,7 @@ func (r *Rule) removeHelperFields(target map[string]interface{}) {
 }
 
 // shouldDelete tells if the field should be deleted according to the rules
-func (r *Rule) shouldDelete(key string) bool {
+func (r *Options) shouldDelete(key string) bool {
 	for _, field := range r.MergeBy {
 		if key != field.Key {
 			continue

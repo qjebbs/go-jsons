@@ -2,17 +2,17 @@
 // Use of this source code is governed by MIT
 // license that can be found in the LICENSE file.
 
-package merge
+package jsons
 
 import (
 	"fmt"
 	"reflect"
 )
 
-// Maps merges source maps into target
-func Maps(target map[string]interface{}, sources ...map[string]interface{}) (err error) {
+// mergeMaps merges source maps into target
+func mergeMaps(target map[string]interface{}, sources ...map[string]interface{}) (err error) {
 	for _, source := range sources {
-		err = mergeMaps(target, source)
+		err = mergeMap(target, source)
 		if err != nil {
 			return err
 		}
@@ -20,9 +20,9 @@ func Maps(target map[string]interface{}, sources ...map[string]interface{}) (err
 	return nil
 }
 
-// mergeMaps merges source map into target
+// mergeMap merges source map into target
 // it supports only map[string]interface{} type for any children of the map tree
-func mergeMaps(target map[string]interface{}, source map[string]interface{}) (err error) {
+func mergeMap(target map[string]interface{}, source map[string]interface{}) (err error) {
 	for key, value := range source {
 		target[key], err = mergeField(target[key], value)
 		if err != nil {
@@ -48,7 +48,7 @@ func mergeField(target interface{}, source interface{}) (interface{}, error) {
 		return tslice, nil
 	} else if smap, ok := source.(map[string]interface{}); ok {
 		tmap, _ := target.(map[string]interface{})
-		err := mergeMaps(tmap, smap)
+		err := mergeMap(tmap, smap)
 		return tmap, err
 	}
 	return source, nil

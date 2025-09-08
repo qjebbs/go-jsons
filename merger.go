@@ -4,27 +4,30 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"path/filepath"
 	"strings"
-
-	"github.com/qjebbs/go-jsons/merge"
-	"github.com/qjebbs/go-jsons/rule"
 )
 
 // Merger is the json merger
 type Merger struct {
 	loadersByName map[Format]*loader
 	loadersByExt  map[string]*loader
-	rule          *rule.Rule
+	options       *Options
 }
 
 // NewMerger returns a new Merger
-func NewMerger(fields ...rule.Field) *Merger {
+func NewMerger(options ...Option) *Merger {
+	o := &Options{}
+	for _, opt := range options {
+		opt(o)
+	}
 	m := &Merger{
 		loadersByName: make(map[Format]*loader),
 		loadersByExt:  make(map[string]*loader),
-		rule:          rule.NewRule(fields...),
+		options:       o,
 	}
-	must(m.RegisterLoader(
+	// never return error
+	_ = m.RegisterLoader(
 		FormatJSON,
 		[]string{".json"},
 		func(v []byte) (map[string]interface{}, error) {
@@ -34,7 +37,7 @@ func NewMerger(fields ...rule.Field) *Merger {
 			}
 			return m, nil
 		},
-	))
+	)
 	return m
 }
 
@@ -59,7 +62,7 @@ func (m *Merger) Merge(inputs ...interface{}) ([]byte, error) {
 			return nil, err
 		}
 	}
-	err := m.rule.Apply(target)
+	err := m.options.Apply(target)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +87,7 @@ func (m *Merger) MergeAs(format Format, inputs ...interface{}) ([]byte, error) {
 			return nil, err
 		}
 	}
-	err := m.rule.Apply(target)
+	err := m.options.Apply(target)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +106,7 @@ func (m *Merger) mergeToMapAs(formatName Format, input interface{}, target map[s
 	if err != nil {
 		return err
 	}
-	return merge.Maps(target, maps...)
+	return mergeMaps(target, maps...)
 }
 
 func (m *Merger) mergeToMap(input interface{}, target map[string]interface{}) error {
@@ -120,7 +123,7 @@ func (m *Merger) mergeToMap(input interface{}, target map[string]interface{}) er
 				if err != nil {
 					return err
 				}
-				return merge.Maps(target, m...)
+				return mergeMaps(target, m...)
 			}
 		}
 		err := m.tryLoaders(v, target)
@@ -162,9 +165,14 @@ func (m *Merger) tryLoaders(input interface{}, target map[string]interface{}) er
 	for _, f := range m.loadersByName {
 		m, err := f.Load(input)
 		if err == nil {
-			return merge.Maps(target, m...)
+			return mergeMaps(target, m...)
 		}
 		errs = append(errs, fmt.Sprintf("[%s] %s", f.Name, err))
 	}
 	return fmt.Errorf("tried all formats but failed: %s", strings.Join(errs, "; "))
+}
+
+func getExtension(filename string) string {
+	ext := filepath.Ext(filename)
+	return strings.ToLower(ext)
 }

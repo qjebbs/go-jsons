@@ -2,7 +2,7 @@
 // Use of this source code is governed by MIT
 // license that can be found in the LICENSE file.
 
-package rule
+package jsons
 
 import (
 	"math"
@@ -16,7 +16,7 @@ type meta struct {
 }
 
 // sortByFields sort slice elements by specified fields
-func sortByFields(slice []interface{}, fields []Field) {
+func sortByFields(slice []interface{}, fields []OptionField) {
 	if len(slice) == 0 || len(fields) == 0 {
 		return
 	}
@@ -42,7 +42,7 @@ func sortByFields(slice []interface{}, fields []Field) {
 	}
 }
 
-func getOrder(v interface{}, fields []Field) float64 {
+func getOrder(v interface{}, fields []OptionField) float64 {
 	m, ok := v.(map[string]interface{})
 	if !ok {
 		return 0

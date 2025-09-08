@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/qjebbs/go-jsons"
-	"github.com/qjebbs/go-jsons/rule"
 )
 
 func TestMerge(t *testing.T) {
@@ -135,8 +134,8 @@ func TestMergeComplex(t *testing.T) {
 	}
 	`)
 	m := jsons.NewMerger(
-		rule.MergeBy("tag"),
-		rule.OrderBy("order"),
+		jsons.WithMergeBy("tag"),
+		jsons.WithOrderBy("order"),
 	)
 	got, err := m.MergeAs(jsons.FormatJSON, a, b)
 	if err != nil {

@@ -2,11 +2,9 @@
 // Use of this source code is governed by MIT
 // license that can be found in the LICENSE file.
 
-package rule
+package jsons
 
-import "github.com/qjebbs/go-jsons/merge"
-
-func mergeByFields(s []interface{}, fields []Field) ([]interface{}, error) {
+func mergeByFields(s []interface{}, fields []OptionField) ([]interface{}, error) {
 	if len(s) == 0 || len(fields) == 0 {
 		return s, nil
 	}
@@ -32,7 +30,7 @@ func mergeByFields(s []interface{}, fields []Field) ([]interface{}, error) {
 				continue
 			}
 			s[j] = merged
-			err := merge.Maps(map1, map2)
+			err := mergeMaps(map1, map2)
 			if err != nil {
 				return nil, err
 			}
@@ -60,7 +58,7 @@ func matchTags(a, b []string) bool {
 	return false
 }
 
-func getTags(v map[string]interface{}, fields []Field) []string {
+func getTags(v map[string]interface{}, fields []OptionField) []string {
 	tags := make([]string, 0, len(fields))
 	for _, field := range fields {
 		value, ok := v[field.Key]

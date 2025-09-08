@@ -1,20 +1,22 @@
-package rule_test
+package jsons_test
 
 import (
 	"reflect"
 	"testing"
 
-	"github.com/qjebbs/go-jsons/rule"
-)
-
-var testRule = rule.NewRule(
-	rule.OrderBy("order"),
-	rule.MergeBy("tag"),
-	rule.OrderByAndRemove("_order"),
-	rule.MergeByAndRemove("_tag"),
+	"github.com/qjebbs/go-jsons"
 )
 
 func TestRules(t *testing.T) {
+	testRule := &jsons.Options{}
+	for _, opt := range []jsons.Option{
+		jsons.WithOrderBy("order"),
+		jsons.WithMergeBy("tag"),
+		jsons.WithOrderByAndRemove("_order"),
+		jsons.WithMergeByAndRemove("_tag"),
+	} {
+		opt(testRule)
+	}
 	t.Parallel()
 	testCases := []struct {
 		name    string
@@ -201,10 +203,11 @@ func TestRules(t *testing.T) {
 
 func TestNils(t *testing.T) {
 	t.Parallel()
-	err := (*rule.Rule)(nil).Apply(nil)
+	err := (*jsons.Options)(nil).Apply(nil)
 	if err != nil {
 		t.Fatalf("want nil, got err: %s", err)
 	}
+	testRule := &jsons.Options{}
 	err = testRule.Apply(nil)
 	if err != nil {
 		t.Fatalf("want nil, got err: %s", err)
