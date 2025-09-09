@@ -4,20 +4,31 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/qjebbs/go-jsons/internal/ordered"
 )
+
+// OrderedMap is an alias of ordered.Map
+type OrderedMap = ordered.Map
+
+// NewOrderedMap is an alias of ordered.New
+var NewOrderedMap = ordered.New
 
 // LoadFunc load the input bytes to map[string]interface{}
 type LoadFunc func([]byte) (map[string]interface{}, error)
+
+// LoadOrderedFunc load the input bytes to Ordered
+type LoadOrderedFunc func([]byte) (*OrderedMap, error)
 
 // loader is a configurable loader for specific format files.
 type loader struct {
 	Name       Format
 	Extensions []string
-	LoadFunc   LoadFunc
+	LoadFunc   LoadOrderedFunc
 }
 
 // makeLoader makes a merger who merge the format by converting it to JSON
-func newLoader(name Format, extensions []string, fn LoadFunc) *loader {
+func newLoader(name Format, extensions []string, fn LoadOrderedFunc) *loader {
 	return &loader{
 		Name:       name,
 		Extensions: extensions,
@@ -26,7 +37,7 @@ func newLoader(name Format, extensions []string, fn LoadFunc) *loader {
 }
 
 // makeLoadFunc makes a merge func who merge the input to
-func (l *loader) Load(input interface{}) ([]map[string]interface{}, error) {
+func (l *loader) Load(input interface{}) ([]*OrderedMap, error) {
 	if input == nil {
 		return nil, nil
 	}
@@ -48,8 +59,8 @@ func (l *loader) Load(input interface{}) ([]map[string]interface{}, error) {
 	}
 }
 
-func (l *loader) loadFiles(files []string) ([]map[string]interface{}, error) {
-	maps := make([]map[string]interface{}, 0, len(files))
+func (l *loader) loadFiles(files []string) ([]*OrderedMap, error) {
+	maps := make([]*OrderedMap, 0, len(files))
 	for _, file := range files {
 		m, err := l.loadFile(file)
 		if err != nil {
@@ -60,8 +71,8 @@ func (l *loader) loadFiles(files []string) ([]map[string]interface{}, error) {
 	return maps, nil
 }
 
-func (l *loader) loadReaders(readers []io.Reader) ([]map[string]interface{}, error) {
-	maps := make([]map[string]interface{}, 0, len(readers))
+func (l *loader) loadReaders(readers []io.Reader) ([]*OrderedMap, error) {
+	maps := make([]*OrderedMap, 0, len(readers))
 	for _, r := range readers {
 		m, err := l.loadReader(r)
 		if err != nil {
@@ -72,8 +83,8 @@ func (l *loader) loadReaders(readers []io.Reader) ([]map[string]interface{}, err
 	return maps, nil
 }
 
-func (l *loader) loadSlices(slices [][]byte) ([]map[string]interface{}, error) {
-	maps := make([]map[string]interface{}, 0, len(slices))
+func (l *loader) loadSlices(slices [][]byte) ([]*OrderedMap, error) {
+	maps := make([]*OrderedMap, 0, len(slices))
 	for _, slice := range slices {
 		m, err := l.LoadFunc(slice)
 		if err != nil {
@@ -84,7 +95,7 @@ func (l *loader) loadSlices(slices [][]byte) ([]map[string]interface{}, error) {
 	return maps, nil
 }
 
-func (l *loader) loadFile(file string) (map[string]interface{}, error) {
+func (l *loader) loadFile(file string) (*OrderedMap, error) {
 	bs, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
@@ -92,7 +103,7 @@ func (l *loader) loadFile(file string) (map[string]interface{}, error) {
 	return l.LoadFunc(bs)
 }
 
-func (l *loader) loadReader(reader io.Reader) (map[string]interface{}, error) {
+func (l *loader) loadReader(reader io.Reader) (*OrderedMap, error) {
 	bs, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err

@@ -7,6 +7,8 @@ package jsons
 import (
 	"math"
 	"sort"
+
+	"github.com/qjebbs/go-jsons/internal/ordered"
 )
 
 type meta struct {
@@ -43,14 +45,14 @@ func sortByFields(slice []interface{}, fields []OptionField) {
 }
 
 func getOrder(v interface{}, fields []OptionField) float64 {
-	m, ok := v.(map[string]interface{})
+	m, ok := v.(*ordered.Map)
 	if !ok {
 		return 0
 	}
 	hasField := false
 	min := math.Inf(1)
 	for _, field := range fields {
-		value, ok := m[field.Name]
+		value, ok := m.Values[field.Name]
 		if !ok || value == nil {
 			continue
 		}

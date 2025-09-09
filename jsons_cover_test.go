@@ -1,6 +1,7 @@
 package jsons_test
 
 import (
+	"encoding/json"
 	"errors"
 	"io"
 	"strings"
@@ -226,6 +227,38 @@ func TestGetExtensionsError(t *testing.T) {
 		t.Error("want error, got nil")
 	}
 }
+
+func TestRegisterLoader(t *testing.T) {
+	m := jsons.NewMerger()
+	err := m.RegisterLoader(
+		jsons.FormatJSON,
+		[]string{".json"},
+		func(b []byte) (map[string]interface{}, error) {
+			m := make(map[string]interface{})
+			if err := json.Unmarshal(b, &m); err != nil {
+				return nil, err
+			}
+			return m, nil
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = m.Merge([]byte(`{a:1}`))
+	if err == nil {
+		t.Error("want error, got nil")
+	}
+	got, err := m.Merge(
+		[]byte(`{"a":1}`),
+		[]byte(`{"b":2}`),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []byte(`{"a":1,"b":2}`)
+	assertJSONEqual(t, want, got)
+}
+
 func TestRegisterLoaderError(t *testing.T) {
 	m := jsons.NewMerger()
 	err := m.RegisterLoader("a", []string{".a1", ".a2"}, nil)

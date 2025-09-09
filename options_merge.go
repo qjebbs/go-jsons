@@ -4,6 +4,11 @@
 
 package jsons
 
+import (
+	"github.com/qjebbs/go-jsons/internal/merge"
+	"github.com/qjebbs/go-jsons/internal/ordered"
+)
+
 func mergeByFields(typeOverride bool, s []interface{}, fields []OptionField) ([]interface{}, error) {
 	if len(s) == 0 || len(fields) == 0 {
 		return s, nil
@@ -12,7 +17,7 @@ func mergeByFields(typeOverride bool, s []interface{}, fields []OptionField) ([]
 	// to: [a,"",b,"",merged,"",merged,""]
 	merged := &struct{}{}
 	for i, item1 := range s {
-		map1, ok := item1.(map[string]interface{})
+		map1, ok := item1.(*ordered.Map)
 		if !ok {
 			continue
 		}
@@ -21,7 +26,7 @@ func mergeByFields(typeOverride bool, s []interface{}, fields []OptionField) ([]
 			continue
 		}
 		for j := i + 1; j < len(s); j++ {
-			map2, ok := s[j].(map[string]interface{})
+			map2, ok := s[j].(*ordered.Map)
 			if !ok {
 				continue
 			}
@@ -30,7 +35,7 @@ func mergeByFields(typeOverride bool, s []interface{}, fields []OptionField) ([]
 				continue
 			}
 			s[j] = merged
-			err := mergeMaps(typeOverride, map1, map2)
+			err := merge.OrderedMaps(typeOverride, map1, map2)
 			if err != nil {
 				return nil, err
 			}
@@ -58,10 +63,10 @@ func matchTags(a, b []string) bool {
 	return false
 }
 
-func getTags(v map[string]interface{}, fields []OptionField) []string {
+func getTags(v *ordered.Map, fields []OptionField) []string {
 	tags := make([]string, 0, len(fields))
 	for _, field := range fields {
-		value, ok := v[field.Name]
+		value, ok := v.Values[field.Name]
 		if !ok {
 			continue
 		}

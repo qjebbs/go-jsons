@@ -114,33 +114,38 @@ import (
 	"fmt"
 
 	"github.com/qjebbs/go-jsons"
-	// yaml v3 is required, since v2 generates `map[interface{}]interface{}`,
-	// which is not compatible with json.Marshal
-	"gopkg.in/yaml.v3"
+	// goccy/go-yaml is able to use json.Unmarshaler
+	"github.com/goccy/go-yaml"
 )
 
-func main() {
+func ExampleMerger_RegisterLoader() {
 	const FormatYAML jsons.Format = "yaml"
 	m := jsons.NewMerger()
-	m.RegisterLoader(
+	m.RegisterOrderedLoader(
 		FormatYAML,
 		[]string{".yaml", ".yml"},
-		func(b []byte) (map[string]interface{}, error) {
-			m := make(map[string]interface{})
-			err := yaml.Unmarshal(b, &m)
+		func(b []byte) (*jsons.OrderedMap, error) {
+			// YAML fields order will be kept
+			m := jsons.NewOrderedMap()
+			err := yaml.UnmarshalWithOptions(
+				b, m,
+				// important
+				yaml.UseJSONUnmarshaler(),
+			)
 			if err != nil {
 				return nil, err
 			}
 			return m, nil
 		},
 	)
-	a := []byte(`{"a": 1}`) // json
-	b := []byte(`b: 1`)     // yaml
+	a := []byte(`{"a":1,"z":1}`)    // json
+	b := []byte("b: 1\nc: 1\nd: 1") // yaml
 	got, err := m.Merge(a, b)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(string(got)) // {"a":1,"b":1}
+	fmt.Println(string(got))
+	// Output: {"a":1,"z":1,"b":1,"c":1,"d":1}
 }
 ```
 

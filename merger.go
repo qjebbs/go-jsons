@@ -6,6 +6,9 @@ import (
 	"io"
 	"path/filepath"
 	"strings"
+
+	"github.com/qjebbs/go-jsons/internal/merge"
+	"github.com/qjebbs/go-jsons/internal/ordered"
 )
 
 // Merger is the json merger
@@ -27,12 +30,12 @@ func NewMerger(options ...Option) *Merger {
 		options:       o,
 	}
 	// never return error
-	_ = m.RegisterLoader(
+	_ = m.RegisterOrderedLoader(
 		FormatJSON,
 		[]string{".json"},
-		func(v []byte) (map[string]interface{}, error) {
-			m := make(map[string]interface{})
-			if err := json.Unmarshal(v, &m); err != nil {
+		func(v []byte) (*ordered.Map, error) {
+			m := ordered.New()
+			if err := json.Unmarshal(v, m); err != nil {
 				return nil, err
 			}
 			return m, nil
@@ -55,7 +58,7 @@ func NewMerger(options ...Option) *Merger {
 //   - io.Reader: content reader
 //   - []io.Reader: content readers
 func (m *Merger) Merge(inputs ...interface{}) ([]byte, error) {
-	target := make(map[string]interface{})
+	target := ordered.New()
 	for _, input := range inputs {
 		err := m.mergeToMap(input, target)
 		if err != nil {
@@ -80,7 +83,7 @@ func (m *Merger) Merge(inputs ...interface{}) ([]byte, error) {
 //   - io.Reader: content reader
 //   - []io.Reader: content readers
 func (m *Merger) MergeAs(format Format, inputs ...interface{}) ([]byte, error) {
-	target := make(map[string]interface{})
+	target := ordered.New()
 	for _, input := range inputs {
 		err := m.mergeToMapAs(format, input, target)
 		if err != nil {
@@ -94,7 +97,7 @@ func (m *Merger) MergeAs(format Format, inputs ...interface{}) ([]byte, error) {
 	return json.Marshal(target)
 }
 
-func (m *Merger) mergeToMapAs(formatName Format, input interface{}, target map[string]interface{}) error {
+func (m *Merger) mergeToMapAs(formatName Format, input interface{}, target *ordered.Map) error {
 	if formatName == FormatAuto {
 		return m.mergeToMap(input, target)
 	}
@@ -106,10 +109,10 @@ func (m *Merger) mergeToMapAs(formatName Format, input interface{}, target map[s
 	if err != nil {
 		return err
 	}
-	return mergeMaps(m.options.TypeOverride, target, maps...)
+	return merge.OrderedMaps(m.options.TypeOverride, target, maps...)
 }
 
-func (m *Merger) mergeToMap(input interface{}, target map[string]interface{}) error {
+func (m *Merger) mergeToMap(input interface{}, target *ordered.Map) error {
 	if input == nil {
 		return nil
 	}
@@ -123,7 +126,7 @@ func (m *Merger) mergeToMap(input interface{}, target map[string]interface{}) er
 				if err != nil {
 					return err
 				}
-				return mergeMaps(m.options.TypeOverride, target, mp...)
+				return merge.OrderedMaps(m.options.TypeOverride, target, mp...)
 			}
 		}
 		err := m.tryLoaders(v, target)
@@ -160,12 +163,12 @@ func (m *Merger) mergeToMap(input interface{}, target map[string]interface{}) er
 	return nil
 }
 
-func (m *Merger) tryLoaders(input interface{}, target map[string]interface{}) error {
+func (m *Merger) tryLoaders(input interface{}, target *ordered.Map) error {
 	var errs []string
 	for _, f := range m.loadersByName {
 		mp, err := f.Load(input)
 		if err == nil {
-			return mergeMaps(m.options.TypeOverride, target, mp...)
+			return merge.OrderedMaps(m.options.TypeOverride, target, mp...)
 		}
 		errs = append(errs, fmt.Sprintf("[%s] %s", f.Name, err))
 	}

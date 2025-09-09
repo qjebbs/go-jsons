@@ -2,15 +2,15 @@
 // Use of this source code is governed by MIT
 // license that can be found in the LICENSE file.
 
-package jsons
+package merge
 
 import (
 	"fmt"
 	"reflect"
 )
 
-// mergeMaps merges source maps into target
-func mergeMaps(typeOverride bool, target map[string]interface{}, sources ...map[string]interface{}) (err error) {
+// Maps merges source maps into target
+func Maps(typeOverride bool, target map[string]interface{}, sources ...map[string]interface{}) (err error) {
 	for _, source := range sources {
 		err = mergeMap(typeOverride, target, source)
 		if err != nil {

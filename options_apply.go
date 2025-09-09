@@ -4,8 +4,10 @@
 
 package jsons
 
+import "github.com/qjebbs/go-jsons/internal/ordered"
+
 // apply applies rule according to m
-func (r *Options) apply(m map[string]interface{}) error {
+func (r *Options) apply(m *ordered.Map) error {
 	if r == nil || (len(r.MergeBy) == 0 && len(r.OrderBy) == 0) {
 		return nil
 	}
@@ -18,38 +20,38 @@ func (r *Options) apply(m map[string]interface{}) error {
 }
 
 // sortMergeSlices enumerates all slices in a map, to sort by order and merge by tag
-func (r *Options) sortMergeSlices(target map[string]interface{}) error {
-	for key, value := range target {
+func (r *Options) sortMergeSlices(target *ordered.Map) error {
+	for key, value := range target.Values {
 		if slice, ok := value.([]interface{}); ok {
 			sortByFields(slice, r.OrderBy)
 			s, err := mergeByFields(r.TypeOverride, slice, r.MergeBy)
 			if err != nil {
 				return err
 			}
-			target[key] = s
+			target.Set(key, s)
 			for _, item := range s {
-				if m, ok := item.(map[string]interface{}); ok {
+				if m, ok := item.(*ordered.Map); ok {
 					r.sortMergeSlices(m)
 				}
 			}
-		} else if field, ok := value.(map[string]interface{}); ok {
+		} else if field, ok := value.(*ordered.Map); ok {
 			r.sortMergeSlices(field)
 		}
 	}
 	return nil
 }
 
-func (r *Options) removeHelperFields(target map[string]interface{}) {
-	for key, value := range target {
+func (r *Options) removeHelperFields(target *ordered.Map) {
+	for key, value := range target.Values {
 		if r.shouldDelete(key) {
-			delete(target, key)
+			target.Remove(key)
 		} else if slice, ok := value.([]interface{}); ok {
 			for _, e := range slice {
-				if el, ok := e.(map[string]interface{}); ok {
+				if el, ok := e.(*ordered.Map); ok {
 					r.removeHelperFields(el)
 				}
 			}
-		} else if field, ok := value.(map[string]interface{}); ok {
+		} else if field, ok := value.(*ordered.Map); ok {
 			r.removeHelperFields(field)
 		}
 	}

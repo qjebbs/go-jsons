@@ -3,6 +3,8 @@ package jsons
 import (
 	"reflect"
 	"testing"
+
+	"github.com/qjebbs/go-jsons/internal/ordered"
 )
 
 func TestRules(t *testing.T) {
@@ -181,7 +183,11 @@ func TestRules(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			err := testRule.apply(tc.value)
+			got := ordered.FromMap(tc.value)
+			want := ordered.FromMap(tc.want)
+			err := testRule.apply(got)
+			want.Sort()
+			got.Sort()
 			switch tc.wantErr {
 			case true:
 				if err == nil {
@@ -191,8 +197,8 @@ func TestRules(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				if !reflect.DeepEqual(tc.want, tc.value) {
-					t.Fatalf("want:\n%v\n\ngot:\n%v", tc.want, tc.value)
+				if !reflect.DeepEqual(want, got) {
+					t.Fatalf("want:\n%v\n\ngot:\n%v", want, got)
 				}
 			}
 		})
