@@ -12,6 +12,7 @@ type Options struct {
 	OrderBy      []OptionField
 	MergeBy      []OptionField
 	TypeOverride bool
+	Indent       string
 }
 
 // OptionField is the OptionField for rules
@@ -64,5 +65,12 @@ func WithMergeByAndRemove(name string) Option {
 func WithTypeOverride(override bool) Option {
 	return func(o *Options) {
 		o.TypeOverride = override
+	}
+}
+
+// WithIndent sets the indent string for merged output.
+func WithIndent(indent string) Option {
+	return func(o *Options) {
+		o.Indent = indent
 	}
 }

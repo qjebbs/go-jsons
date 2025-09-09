@@ -46,6 +46,30 @@ func TestMergeAsAuto(t *testing.T) {
 	assertJSONEqual(t, want, got)
 }
 
+func TestIndent(t *testing.T) {
+	m := jsons.NewMerger(
+		jsons.WithIndent("  "),
+	)
+	got, err := m.Merge([]byte(`{"a":1}`), []byte(`{"b":1}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []byte(`{
+  "a": 1,
+  "b": 1
+}`)
+	if string(got) != string(want) {
+		t.Errorf("want:\n%s\ngot:\n%s", want, got)
+	}
+	got, err = m.MergeAs(jsons.FormatJSON, []byte(`{"a":1}`), []byte(`{"b":1}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != string(want) {
+		t.Errorf("want:\n%s\ngot:\n%s", want, got)
+	}
+}
+
 func TestMergeAsUnknownFormat(t *testing.T) {
 	m := jsons.NewMerger()
 	_, err := m.MergeAs("unknown", []byte(`{}`))
