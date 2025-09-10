@@ -69,8 +69,8 @@ func (m *Merger) Merge(inputs ...interface{}) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if m.options.Indent != "" {
-		return json.MarshalIndent(target, "", m.options.Indent)
+	if m.options.MarshalIndent != "" {
+		return json.MarshalIndent(target, m.options.MarshalPrefix, m.options.MarshalIndent)
 	}
 	return json.Marshal(target)
 }
@@ -97,8 +97,8 @@ func (m *Merger) MergeAs(format Format, inputs ...interface{}) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if m.options.Indent != "" {
-		return json.MarshalIndent(target, "", m.options.Indent)
+	if m.options.MarshalIndent != "" {
+		return json.MarshalIndent(target, m.options.MarshalPrefix, m.options.MarshalIndent)
 	}
 	return json.Marshal(target)
 }

@@ -48,7 +48,7 @@ func TestMergeAsAuto(t *testing.T) {
 
 func TestIndent(t *testing.T) {
 	m := jsons.NewMerger(
-		jsons.WithIndent("  "),
+		jsons.WithIndent("", "  "),
 	)
 	got, err := m.Merge([]byte(`{"a":1}`), []byte(`{"b":1}`))
 	if err != nil {

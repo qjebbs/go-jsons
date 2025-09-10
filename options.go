@@ -9,10 +9,11 @@ type Option func(o *Options)
 
 // Options is the merge rules
 type Options struct {
-	OrderBy      []OptionField
-	MergeBy      []OptionField
-	TypeOverride bool
-	Indent       string
+	OrderBy       []OptionField
+	MergeBy       []OptionField
+	TypeOverride  bool
+	MarshalPrefix string
+	MarshalIndent string
 }
 
 // OptionField is the OptionField for rules
@@ -69,8 +70,9 @@ func WithTypeOverride(override bool) Option {
 }
 
 // WithIndent sets the indent string for merged output.
-func WithIndent(indent string) Option {
+func WithIndent(prefix, indent string) Option {
 	return func(o *Options) {
-		o.Indent = indent
+		o.MarshalPrefix = prefix
+		o.MarshalIndent = indent
 	}
 }
