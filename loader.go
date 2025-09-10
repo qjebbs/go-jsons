@@ -17,7 +17,7 @@ var NewOrderedMap = ordered.New
 // LoadFunc load the input bytes to map[string]interface{}
 type LoadFunc func([]byte) (map[string]interface{}, error)
 
-// LoadOrderedFunc load the input bytes to Ordered
+// LoadOrderedFunc load the input bytes to *OrderedMap, which keeps the fields order
 type LoadOrderedFunc func([]byte) (*OrderedMap, error)
 
 // loader is a configurable loader for specific format files.

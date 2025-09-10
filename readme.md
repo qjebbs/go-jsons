@@ -30,12 +30,12 @@ got, err := jsons.Merge(a, b, c) // got = []byte(`{"a":1,"b":[1,2]}`)
 
 ## Merge rules
 
-The strandard merger has only one rule which is intuitive and easy to understand:
+The strandard merger is intuitive and easy to understand:
 
 - Simple values (`string`, `number`, `boolean`) are overwritten by later ones.
 - Container values (`object`, `array`) are merged recursively.
 
-To work with complex files and contents, you can create a custom merger to applies more rules:
+To work with complex contents, you may create a custom merger to applies more options:
 
 ```go
 var myMerger = jsons.NewMerger(

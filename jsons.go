@@ -1,3 +1,4 @@
+// Package jsons is a universal JSON merge library for Go.
 package jsons
 
 // Merge merges input JSONs into a single JSON.

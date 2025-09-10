@@ -7,7 +7,7 @@ package jsons
 // Option is the option for merger
 type Option func(o *Options)
 
-// Options is the merge rules
+// Options is the merge options
 type Options struct {
 	OrderBy       []OptionField
 	MergeBy       []OptionField
@@ -69,7 +69,7 @@ func WithTypeOverride(override bool) Option {
 	}
 }
 
-// WithIndent sets the indent string for merged output.
+// WithIndent sets the indent options for merged output.
 func WithIndent(prefix, indent string) Option {
 	return func(o *Options) {
 		o.MarshalPrefix = prefix
