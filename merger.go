@@ -15,19 +15,17 @@ import (
 type Merger struct {
 	loadersByName map[Format]*loader
 	loadersByExt  map[string]*loader
-	options       *Options
+	options       options
 }
 
 // NewMerger returns a new Merger
 func NewMerger(options ...Option) *Merger {
-	o := &Options{}
-	for _, opt := range options {
-		opt(o)
-	}
 	m := &Merger{
 		loadersByName: make(map[Format]*loader),
 		loadersByExt:  make(map[string]*loader),
-		options:       o,
+	}
+	for _, opt := range options {
+		opt(m)
 	}
 	// never return error
 	_ = m.RegisterOrderedLoader(

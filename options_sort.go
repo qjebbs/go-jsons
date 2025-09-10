@@ -18,7 +18,7 @@ type meta struct {
 }
 
 // sortByFields sort slice elements by specified fields
-func sortByFields(slice []interface{}, fields []OptionField) {
+func sortByFields(slice []interface{}, fields []field) {
 	if len(slice) == 0 || len(fields) == 0 {
 		return
 	}
@@ -44,7 +44,7 @@ func sortByFields(slice []interface{}, fields []OptionField) {
 	}
 }
 
-func getOrder(v interface{}, fields []OptionField) float64 {
+func getOrder(v interface{}, fields []field) float64 {
 	m, ok := v.(*ordered.Map)
 	if !ok {
 		return 0

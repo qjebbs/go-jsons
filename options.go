@@ -5,27 +5,27 @@
 package jsons
 
 // Option is the option for merger
-type Option func(o *Options)
+type Option func(m *Merger)
 
-// Options is the merge options
-type Options struct {
-	OrderBy       []OptionField
-	MergeBy       []OptionField
+// options is the merge options
+type options struct {
+	OrderBy       []field
+	MergeBy       []field
 	TypeOverride  bool
 	MarshalPrefix string
 	MarshalIndent string
 }
 
-// OptionField is the OptionField for rules
-type OptionField struct {
+// field is the field for rules
+type field struct {
 	Name   string // field name
 	Remove bool   // whether to remove the field after merged
 }
 
 // WithOrderBy is the order by field for slice sort rule
 func WithOrderBy(name string) Option {
-	return func(o *Options) {
-		o.OrderBy = append(o.OrderBy, OptionField{
+	return func(m *Merger) {
+		m.options.OrderBy = append(m.options.OrderBy, field{
 			Name:   name,
 			Remove: false,
 		})
@@ -34,8 +34,8 @@ func WithOrderBy(name string) Option {
 
 // WithMergeBy is the merge by field for slice sort rule
 func WithMergeBy(name string) Option {
-	return func(o *Options) {
-		o.MergeBy = append(o.MergeBy, OptionField{
+	return func(m *Merger) {
+		m.options.MergeBy = append(m.options.MergeBy, field{
 			Name:   name,
 			Remove: false,
 		})
@@ -44,8 +44,8 @@ func WithMergeBy(name string) Option {
 
 // WithOrderByAndRemove is the order by field for slice merge rule
 func WithOrderByAndRemove(name string) Option {
-	return func(o *Options) {
-		o.OrderBy = append(o.OrderBy, OptionField{
+	return func(m *Merger) {
+		m.options.OrderBy = append(m.options.OrderBy, field{
 			Name:   name,
 			Remove: true,
 		})
@@ -54,8 +54,8 @@ func WithOrderByAndRemove(name string) Option {
 
 // WithMergeByAndRemove is the merge by field for slice merge rule
 func WithMergeByAndRemove(name string) Option {
-	return func(o *Options) {
-		o.MergeBy = append(o.MergeBy, OptionField{
+	return func(m *Merger) {
+		m.options.MergeBy = append(m.options.MergeBy, field{
 			Name:   name,
 			Remove: true,
 		})
@@ -64,15 +64,15 @@ func WithMergeByAndRemove(name string) Option {
 
 // WithTypeOverride sets whether to override the type when merging.
 func WithTypeOverride(override bool) Option {
-	return func(o *Options) {
-		o.TypeOverride = override
+	return func(m *Merger) {
+		m.options.TypeOverride = override
 	}
 }
 
 // WithIndent sets the indent options for merged output.
 func WithIndent(prefix, indent string) Option {
-	return func(o *Options) {
-		o.MarshalPrefix = prefix
-		o.MarshalIndent = indent
+	return func(m *Merger) {
+		m.options.MarshalPrefix = prefix
+		m.options.MarshalIndent = indent
 	}
 }

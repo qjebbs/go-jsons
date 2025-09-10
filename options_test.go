@@ -8,15 +8,12 @@ import (
 )
 
 func TestRules(t *testing.T) {
-	testRule := &Options{}
-	for _, opt := range []Option{
+	m := NewMerger(
 		WithOrderBy("order"),
 		WithMergeBy("tag"),
 		WithOrderByAndRemove("_order"),
 		WithMergeByAndRemove("_tag"),
-	} {
-		opt(testRule)
-	}
+	)
 	t.Parallel()
 	testCases := []struct {
 		name    string
@@ -185,7 +182,7 @@ func TestRules(t *testing.T) {
 			t.Parallel()
 			got := ordered.FromMap(tc.value)
 			want := ordered.FromMap(tc.want)
-			err := testRule.apply(got)
+			err := m.options.apply(got)
 			want.Sort()
 			got.Sort()
 			switch tc.wantErr {
@@ -207,11 +204,11 @@ func TestRules(t *testing.T) {
 
 func TestNils(t *testing.T) {
 	t.Parallel()
-	err := (*Options)(nil).apply(nil)
+	err := (*options)(nil).apply(nil)
 	if err != nil {
 		t.Fatalf("want nil, got err: %s", err)
 	}
-	testRule := &Options{}
+	testRule := &options{}
 	err = testRule.apply(nil)
 	if err != nil {
 		t.Fatalf("want nil, got err: %s", err)

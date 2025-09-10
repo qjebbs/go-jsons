@@ -9,7 +9,7 @@ import (
 	"github.com/qjebbs/go-jsons/internal/ordered"
 )
 
-func mergeByFields(typeOverride bool, s []interface{}, fields []OptionField) ([]interface{}, error) {
+func mergeByFields(typeOverride bool, s []interface{}, fields []field) ([]interface{}, error) {
 	if len(s) == 0 || len(fields) == 0 {
 		return s, nil
 	}
@@ -63,7 +63,7 @@ func matchTags(a, b []string) bool {
 	return false
 }
 
-func getTags(v *ordered.Map, fields []OptionField) []string {
+func getTags(v *ordered.Map, fields []field) []string {
 	tags := make([]string, 0, len(fields))
 	for _, field := range fields {
 		value, ok := v.Values[field.Name]

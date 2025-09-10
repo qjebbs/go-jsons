@@ -7,7 +7,7 @@ package jsons
 import "github.com/qjebbs/go-jsons/internal/ordered"
 
 // apply applies rule according to m
-func (r *Options) apply(m *ordered.Map) error {
+func (r *options) apply(m *ordered.Map) error {
 	if r == nil || (len(r.MergeBy) == 0 && len(r.OrderBy) == 0) {
 		return nil
 	}
@@ -20,7 +20,7 @@ func (r *Options) apply(m *ordered.Map) error {
 }
 
 // sortMergeSlices enumerates all slices in a map, to sort by order and merge by tag
-func (r *Options) sortMergeSlices(target *ordered.Map) error {
+func (r *options) sortMergeSlices(target *ordered.Map) error {
 	for key, value := range target.Values {
 		if slice, ok := value.([]interface{}); ok {
 			sortByFields(slice, r.OrderBy)
@@ -41,7 +41,7 @@ func (r *Options) sortMergeSlices(target *ordered.Map) error {
 	return nil
 }
 
-func (r *Options) removeHelperFields(target *ordered.Map) {
+func (r *options) removeHelperFields(target *ordered.Map) {
 	for key, value := range target.Values {
 		if r.shouldDelete(key) {
 			target.Remove(key)
@@ -58,7 +58,7 @@ func (r *Options) removeHelperFields(target *ordered.Map) {
 }
 
 // shouldDelete tells if the field should be deleted according to the rules
-func (r *Options) shouldDelete(key string) bool {
+func (r *options) shouldDelete(key string) bool {
 	for _, field := range r.MergeBy {
 		if key != field.Name {
 			continue
