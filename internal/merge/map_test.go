@@ -19,9 +19,10 @@ var testCases = []struct {
 		name: "fields_merge",
 		values: []string{
 			`{"a": 1}`,
+			`{"a": 2}`,
 			`{"b": 2}`,
 		},
-		want: `{"a": 1, "b": 2}`,
+		want: `{"a": 2, "b": 2}`,
 	},
 	{
 		name: "values_merge",
@@ -76,8 +77,9 @@ func TestMergeMaps(t *testing.T) {
 			if tc.want != "" {
 				want = convertToMap(t, tc.want)
 			}
+			items := convertToMaps(t, tc.values)
 			got := make(map[string]interface{})
-			err := merge.Maps(tc.typeOverride, got, convertToMaps(t, tc.values)...)
+			err := merge.Maps(tc.typeOverride, got, items...)
 			switch tc.wantErr {
 			case true:
 				if err == nil {
@@ -96,12 +98,9 @@ func TestMergeMaps(t *testing.T) {
 }
 
 func convertToMaps(t *testing.T, values []string) []map[string]interface{} {
+	t.Helper()
 	var maps []map[string]interface{}
 	for _, v := range values {
-		var m map[string]interface{}
-		if err := json.Unmarshal([]byte(v), &m); err != nil {
-			continue
-		}
 		maps = append(maps, convertToMap(t, v))
 	}
 	return maps
