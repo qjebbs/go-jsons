@@ -1,20 +1,28 @@
 package jsons
 
-import (
-	"fmt"
-)
+import "fmt"
 
-// Extensions get supported extensions of given format.
-// If format is empty or FormatAuto, it returns all extensions.
-func (m *Merger) Extensions(formatName Format) ([]string, error) {
-	if formatName == "" || formatName == FormatAuto {
+// Extensions get supported extensions of given formats.
+// If formatNames is empty or contains FormatAuto, it returns all extensions.
+func (m *Merger) Extensions(formatNames ...Format) ([]string, error) {
+	if len(formatNames) == 0 || contains(formatNames, FormatAuto) {
 		return m.getAllExtensions(), nil
 	}
-	f, found := m.loadersByName[formatName]
-	if !found {
-		return nil, fmt.Errorf("%s not found", formatName)
+	var extensions []string
+	seen := make(map[string]struct{})
+	for _, formatName := range formatNames {
+		f, found := m.loadersByName[formatName]
+		if !found {
+			return nil, fmt.Errorf("%s not found", formatName)
+		}
+		for _, ext := range f.Extensions {
+			if _, found := seen[ext]; !found {
+				extensions = append(extensions, ext)
+				seen[ext] = struct{}{}
+			}
+		}
 	}
-	return f.Extensions, nil
+	return extensions, nil
 }
 
 // getAllExtensions get all extensions supported
@@ -24,4 +32,13 @@ func (m *Merger) getAllExtensions() []string {
 		extensions = append(extensions, ext)
 	}
 	return extensions
+}
+
+func contains[T comparable](slice []T, str T) bool {
+	for _, s := range slice {
+		if s == str {
+			return true
+		}
+	}
+	return false
 }
