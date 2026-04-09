@@ -101,6 +101,37 @@ Output:
 }
 ```
 
+## Custom preprocessors
+
+You can also register custom preprocessors to modify the content before merge, for example:
+
+```go
+func ExampleMerger_withPreprocessor() {
+	a := []byte(`{"array": ["ONE", "TWO"]}`)
+	b := []byte(`{"array": ["THREE"]}`)
+	m := jsons.NewMerger(jsons.WithPreprocessor(func(key string, value interface{}) interface{} {
+		if str, ok := value.(string); ok {
+			switch str {
+			case "ONE":
+				return 1
+			case "TWO":
+				return 2
+			case "THREE":
+				return 3
+			}
+		}
+		return value
+	}))
+	got, err := m.MergeAs(jsons.FormatJSON, a, b)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(string(got))
+	// Output: {"array":[1,2,3]}
+}
+```
+
 ## Load from other formats
 
 `go-jsons` allows you to extend it to load other formats easily.
