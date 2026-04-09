@@ -9,7 +9,7 @@ import (
 	"github.com/qjebbs/go-jsons/internal/ordered"
 )
 
-func mergeByFields(typeOverride bool, s []interface{}, fields []field) ([]interface{}, error) {
+func mergeByFields(s []interface{}, fields []field, typeOverride bool) ([]interface{}, error) {
 	if len(s) == 0 || len(fields) == 0 {
 		return s, nil
 	}
@@ -35,7 +35,7 @@ func mergeByFields(typeOverride bool, s []interface{}, fields []field) ([]interf
 				continue
 			}
 			s[j] = merged
-			err := merge.OrderedMaps(typeOverride, map1, map2)
+			err := merge.OrderedMaps(map1, []*ordered.Map{map2}, typeOverride)
 			if err != nil {
 				return nil, err
 			}

@@ -113,7 +113,7 @@ func (m *Merger) mergeToMapAs(formatName Format, input interface{}, target *orde
 	if err != nil {
 		return err
 	}
-	return merge.OrderedMaps(m.options.TypeOverride, target, maps...)
+	return merge.OrderedMaps(target, maps, m.options.TypeOverride)
 }
 
 func (m *Merger) mergeToMap(input interface{}, target *ordered.Map) error {
@@ -130,7 +130,7 @@ func (m *Merger) mergeToMap(input interface{}, target *ordered.Map) error {
 				if err != nil {
 					return err
 				}
-				return merge.OrderedMaps(m.options.TypeOverride, target, mp...)
+				return merge.OrderedMaps(target, mp, m.options.TypeOverride)
 			}
 		}
 		err := m.tryLoaders(v, target)
@@ -172,7 +172,7 @@ func (m *Merger) tryLoaders(input interface{}, target *ordered.Map) error {
 	for _, f := range m.loadersByName {
 		mp, err := f.Load(input)
 		if err == nil {
-			return merge.OrderedMaps(m.options.TypeOverride, target, mp...)
+			return merge.OrderedMaps(target, mp, m.options.TypeOverride)
 		}
 		errs = append(errs, fmt.Sprintf("[%s] %s", f.Name, err))
 	}

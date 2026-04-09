@@ -8,9 +8,9 @@ import (
 )
 
 // OrderedMaps merges source ordered maps into target
-func OrderedMaps(typeOverride bool, target *ordered.Map, sources ...*ordered.Map) (err error) {
+func OrderedMaps(target *ordered.Map, sources []*ordered.Map, typeOverride bool) (err error) {
 	for _, source := range sources {
-		err = mergeOrderedMap(typeOverride, target, source)
+		err = mergeOrderedMap(target, source, typeOverride)
 		if err != nil {
 			return err
 		}
@@ -18,14 +18,14 @@ func OrderedMaps(typeOverride bool, target *ordered.Map, sources ...*ordered.Map
 	return nil
 }
 
-func mergeOrderedMap(typeOverride bool, target *ordered.Map, source *ordered.Map) (err error) {
+func mergeOrderedMap(target *ordered.Map, source *ordered.Map, typeOverride bool) (err error) {
 	for _, sk := range source.Keys {
 		if _, exists := target.Values[sk]; !exists {
 			target.Keys = append(target.Keys, sk)
 		}
 	}
 	for key, value := range source.Values {
-		target.Values[key], err = mergeOrderedField(typeOverride, target.Values[key], value)
+		target.Values[key], err = mergeOrderedField(target.Values[key], value, typeOverride)
 		if err != nil {
 			return fmt.Errorf("field '%s': %s", key, err)
 		}
@@ -33,7 +33,7 @@ func mergeOrderedMap(typeOverride bool, target *ordered.Map, source *ordered.Map
 	return nil
 }
 
-func mergeOrderedField(typeOverride bool, target interface{}, source interface{}) (interface{}, error) {
+func mergeOrderedField(target interface{}, source interface{}, typeOverride bool) (interface{}, error) {
 	if source == nil {
 		return target, nil
 	}
@@ -53,7 +53,7 @@ func mergeOrderedField(typeOverride bool, target interface{}, source interface{}
 	}
 	if smap, ok := source.(*ordered.Map); ok {
 		tmap, _ := target.(*ordered.Map)
-		err := mergeOrderedMap(typeOverride, tmap, smap)
+		err := mergeOrderedMap(tmap, smap, typeOverride)
 		return tmap, err
 	}
 	return source, nil

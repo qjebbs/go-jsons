@@ -24,7 +24,7 @@ func (r *options) sortMergeSlices(target *ordered.Map) error {
 	for key, value := range target.Values {
 		if slice, ok := value.([]interface{}); ok {
 			sortByFields(slice, r.OrderBy)
-			s, err := mergeByFields(r.TypeOverride, slice, r.MergeBy)
+			s, err := mergeByFields(slice, r.MergeBy, r.TypeOverride)
 			if err != nil {
 				return err
 			}

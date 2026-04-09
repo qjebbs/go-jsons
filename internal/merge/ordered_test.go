@@ -20,7 +20,7 @@ func TestMergeOrdered(t *testing.T) {
 			}
 			items := convertToOrderedMaps(t, tc.values)
 			got := ordered.New()
-			err := merge.OrderedMaps(tc.typeOverride, got, items...)
+			err := merge.OrderedMaps(got, items, tc.typeOverride)
 			got.Sort()
 			switch tc.wantErr {
 			case true:
