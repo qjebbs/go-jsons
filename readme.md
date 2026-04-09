@@ -107,18 +107,12 @@ You can also register custom preprocessors to modify the content before merge, f
 
 ```go
 func ExampleMerger_withPreprocessor() {
-	a := []byte(`{"array": ["ONE", "TWO"]}`)
-	b := []byte(`{"array": ["THREE"]}`)
+	os.Setenv("HOME", "/home/user")
+	a := []byte(`{"work_dir": "${HOME}/work"}`)
+	b := []byte(`{"other_settings": "..."}`)
 	m := jsons.NewMerger(jsons.WithPreprocessor(func(key string, value interface{}) interface{} {
 		if str, ok := value.(string); ok {
-			switch str {
-			case "ONE":
-				return 1
-			case "TWO":
-				return 2
-			case "THREE":
-				return 3
-			}
+			return os.ExpandEnv(str)
 		}
 		return value
 	}))
@@ -128,7 +122,7 @@ func ExampleMerger_withPreprocessor() {
 		return
 	}
 	fmt.Println(string(got))
-	// Output: {"array":[1,2,3]}
+	// Output: {"work_dir":"/home/user/work","other_settings":"..."}
 }
 ```
 
