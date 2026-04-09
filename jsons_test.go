@@ -132,6 +132,53 @@ func TestMergeFiles(t *testing.T) {
 	assertJSONEqual(t, want, got)
 }
 
+func TestMergeWithPreprocessor(t *testing.T) {
+	a := []byte(`
+	{
+	  	"array": ["ONE", "TWO"],
+		"value": "THREE"
+	}
+`)
+	b := []byte(`
+	{
+		"array": ["THREE"],
+		"value": "FOUR",
+		"map": {"key":"FIVE"}
+	}
+`)
+	want := []byte(`
+	{
+	  "array": [1, 2, 3],
+	  "value": 4,
+	  "map": {"key": 5}
+	}
+	`)
+	m := jsons.NewMerger(
+		jsons.WithPreprocessor(func(key string, value interface{}) interface{} {
+			if str, ok := value.(string); ok {
+				switch str {
+				case "ONE":
+					return 1
+				case "TWO":
+					return 2
+				case "THREE":
+					return 3
+				case "FOUR":
+					return 4
+				case "FIVE":
+					return 5
+				}
+			}
+			return value
+		}),
+	)
+	got, err := m.MergeAs(jsons.FormatJSON, a, b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertJSONEqual(t, want, got)
+}
+
 func assertJSONEqual(t *testing.T, want, got []byte) {
 	wantMap := make(map[string]interface{})
 	gotMap := make(map[string]interface{})

@@ -4,11 +4,15 @@
 
 package jsons
 
-import "github.com/qjebbs/go-jsons/internal/ordered"
+import (
+	"fmt"
+
+	"github.com/qjebbs/go-jsons/internal/ordered"
+)
 
 // apply applies rule according to m
 func (r *options) apply(m *ordered.Map) error {
-	if r == nil || (len(r.MergeBy) == 0 && len(r.OrderBy) == 0) {
+	if r == nil || (len(r.MergeBy) == 0 && len(r.OrderBy) == 0 && len(r.Preprocessors) == 0) {
 		return nil
 	}
 	err := r.sortMergeSlices(m)
@@ -22,18 +26,25 @@ func (r *options) apply(m *ordered.Map) error {
 // sortMergeSlices enumerates all slices in a map, to sort by order and merge by tag
 func (r *options) sortMergeSlices(target *ordered.Map) error {
 	for key, value := range target.Values {
+		for _, pre := range r.Preprocessors {
+			value = pre(key, value)
+		}
+		target.Set(key, value)
 		if slice, ok := value.([]interface{}); ok {
 			sortByFields(slice, r.OrderBy)
 			s, err := mergeByFields(slice, r.MergeBy, r.TypeOverride)
 			if err != nil {
 				return err
 			}
-			target.Set(key, s)
-			for _, item := range s {
+			for i, item := range s {
+				for _, pre := range r.Preprocessors {
+					s[i] = pre(fmt.Sprintf("%s[%d]", key, i), item)
+				}
 				if m, ok := item.(*ordered.Map); ok {
 					r.sortMergeSlices(m)
 				}
 			}
+			target.Set(key, s)
 		} else if field, ok := value.(*ordered.Map); ok {
 			r.sortMergeSlices(field)
 		}
