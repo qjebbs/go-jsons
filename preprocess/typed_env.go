@@ -130,8 +130,25 @@ func parse(raw string) []expr {
 	}
 
 	for i := 0; i < len(runes); i++ {
-		if runes[i] != '$' || i+1 >= len(runes) || runes[i+1] != '{' {
+		if runes[i] != '$' || i+1 >= len(runes) {
 			plainBuf.WriteRune(runes[i])
+			continue
+		}
+
+		// Bare $VAR syntax (no braces) — expand as string only
+		if runes[i+1] != '{' {
+			if !unicode.IsLetter(runes[i+1]) && runes[i+1] != '_' {
+				plainBuf.WriteRune(runes[i])
+				continue
+			}
+			j := i + 1
+			for j < len(runes) && (unicode.IsLetter(runes[j]) || unicode.IsDigit(runes[j]) || runes[j] == '_') {
+				j++
+			}
+			varName := string(runes[i+1 : j])
+			flushPlain()
+			exprs = append(exprs, stringExpr{varName})
+			i = j - 1
 			continue
 		}
 

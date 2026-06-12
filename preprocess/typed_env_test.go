@@ -65,6 +65,8 @@ func TestExpandTypedEnv(t *testing.T) {
 		{"${TT_STR:unknown}", "hello"},
 		// Multiple typed refs — all annotations stripped, expanded as string
 		{"${TT_STR:string}/${TT_STR:string}/path", "hello/hello/path"},
+		// No braces
+		{"$TT_BOOL_1:boolean", "1:boolean"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
