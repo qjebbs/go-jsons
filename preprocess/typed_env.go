@@ -1,7 +1,6 @@
 package preprocess
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -109,19 +108,13 @@ func (v booleanExpr) buildTyped() any {
 	}
 }
 func (v booleanExpr) buildString() string {
-	r := v.buildTyped()
-	switch val := r.(type) {
+	switch val := v.buildTyped().(type) {
 	case bool:
-		if val {
-			return "true"
-		}
-		return "false"
+		return strconv.FormatBool(val)
 	case string:
 		return val
-	default:
-		// should not happen
-		return fmt.Sprint(val)
 	}
+	return ""
 }
 
 func parse(raw string) []expr {
