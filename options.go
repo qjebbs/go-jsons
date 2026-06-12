@@ -4,11 +4,10 @@
 
 package jsons
 
+import "github.com/qjebbs/go-jsons/preprocess"
+
 // Option is the option for merger
 type Option func(m *Merger)
-
-// PreprocessorFunc is the type of preprocessor function, which can be used to preprocess values before merging.
-type PreprocessorFunc func(key string, value interface{}) interface{}
 
 // options is the merge options
 type options struct {
@@ -17,7 +16,7 @@ type options struct {
 	TypeOverride  bool
 	MarshalPrefix string
 	MarshalIndent string
-	Preprocessors []PreprocessorFunc
+	Preprocessors []preprocess.PreprocessorFunc
 }
 
 // field is the field for rules
@@ -82,7 +81,7 @@ func WithIndent(prefix, indent string) Option {
 }
 
 // WithPreprocessor adds a preprocessor function to preprocess values before merging.
-func WithPreprocessor(preprocessor PreprocessorFunc) Option {
+func WithPreprocessor(preprocessor preprocess.PreprocessorFunc) Option {
 	return func(m *Merger) {
 		m.options.Preprocessors = append(m.options.Preprocessors, preprocessor)
 	}

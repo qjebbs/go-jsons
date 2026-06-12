@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/qjebbs/go-jsons"
+	"github.com/qjebbs/go-jsons/preprocess"
 )
 
 func Example_merge() {
@@ -85,22 +86,19 @@ func Example_mergeAdvanced() {
 }
 
 func ExampleMerger_withPreprocessor() {
-	os.Setenv("HOME", "/home/user")
-	a := []byte(`{"work_dir": "${HOME}/work"}`)
-	b := []byte(`{"other_settings": "..."}`)
-	m := jsons.NewMerger(jsons.WithPreprocessor(func(key string, value interface{}) interface{} {
-		if str, ok := value.(string); ok {
-			return os.ExpandEnv(str)
-		}
-		return value
-	}))
+	os.Setenv("PORT", "12345")
+	a := []byte(`{"listen": "127.0.0.1"}`)
+	b := []byte(`{"listen_port": "${PORT:number}"}`)
+	m := jsons.NewMerger(jsons.WithPreprocessor(
+		preprocess.ExpandTypedEnv,
+	))
 	got, err := m.MergeAs(jsons.FormatJSON, a, b)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Println(string(got))
-	// Output: {"work_dir":"/home/user/work","other_settings":"..."}
+	// Output: {"listen":"127.0.0.1","listen_port":12345}
 }
 
 func ExampleMerger_RegisterOrderedLoader() {

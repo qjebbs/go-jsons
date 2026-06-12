@@ -101,30 +101,29 @@ Output:
 }
 ```
 
-## Custom preprocessors
+## Preprocessor
 
-You can also register custom preprocessors to modify the content before merge, for example:
+You can also register preprocessors to modify the content before merge, for example:
 
 ```go
 func ExampleMerger_withPreprocessor() {
-	os.Setenv("HOME", "/home/user")
-	a := []byte(`{"work_dir": "${HOME}/work"}`)
-	b := []byte(`{"other_settings": "..."}`)
-	m := jsons.NewMerger(jsons.WithPreprocessor(func(key string, value interface{}) interface{} {
-		if str, ok := value.(string); ok {
-			return os.ExpandEnv(str)
-		}
-		return value
-	}))
+	os.Setenv("PORT", "12345")
+	a := []byte(`{"listen": "127.0.0.1"}`)
+	b := []byte(`{"listen_port": "${PORT:number}"}`)
+	m := jsons.NewMerger(jsons.WithPreprocessor(
+		preprocess.ExpandTypedEnv,
+	))
 	got, err := m.MergeAs(jsons.FormatJSON, a, b)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Println(string(got))
-	// Output: {"work_dir":"/home/user/work","other_settings":"..."}
+	// Output: {"listen":"127.0.0.1","listen_port":12345}
 }
 ```
+
+The `listen_port` field requires a number, the preprocessor `ExpandTypedEnv` converts the string value of `PORT` environment variable to a number before merging.
 
 ## Load from other formats
 
